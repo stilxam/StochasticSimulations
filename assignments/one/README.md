@@ -15,3 +15,6 @@ We used a discrete event simulation to simulate the different queueing systems. 
 - The different queueing systems were implemented in the location ```QueueingSystems.py```
 - The simulation of the different queueing systems was implemented in the location ```simulation.py```
 - These were all evaluated in the location ```evaluation.py```
+
+## Results
+The results of the simulation are shown in the following graphs:
