@@ -16,7 +16,7 @@ def boat_line(q_Type: str, len_q, max_group_s, min_group_s, passengers):
     :param max_group_s: is the maximum group size
     :param min_group_s: is the minimum group size
     :param passengers: Max number of passengers in the boat
-    :return: the number of boats divided by the length of the queue
+    :return: the number of groups per boat
     """
     Q = Queue(length=len_q, high=max_group_s, low=min_group_s)
     total_its = 0
@@ -29,7 +29,7 @@ def boat_line(q_Type: str, len_q, max_group_s, min_group_s, passengers):
             raise ValueError("Invalid q_Type")
 
         total_its += 1
-    return total_its / len_q
+    return len_q/ total_its
 
 
 def stochastic_roller_coaster(
@@ -50,7 +50,7 @@ def stochastic_roller_coaster(
     :param min_group_s: specifies the minimum group size
     :param passengers: specifies the number of passengers in the boat
     :param n_jobs: specifies the number of jobs to be executed in parallel
-    :return: an array with the results of the simulations
+    :return: an array with the average number of groups per boat of the simulations
     """
     t_init = time.time()
 
@@ -60,5 +60,5 @@ def stochastic_roller_coaster(
     t_term = time.time()
     results = np.array(results)
 
-    print(f"\n{q_Type} TOOK  {t_term - t_init} SECONDS")
+    print(f"\n{q_Type} TOOK  {round(t_term - t_init, 2)} SECONDS")
     return results
