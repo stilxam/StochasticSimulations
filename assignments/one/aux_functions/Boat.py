@@ -16,7 +16,7 @@ class Boat:
             return True
 
     def is_boat_full(self):
-        if self.n_seats < 8:
+        if self.filled_seats < 8:
             return False
-        elif self.n_seats == 8:
+        elif self.filled_seats == 8:
             return True
