@@ -1,5 +1,5 @@
 from aux_functions.Queue import Queue
-from Q_types import single_line, two_lines
+from QueuingSystems import single_line, two_lines
 import numpy as np
 from joblib import Parallel, delayed
 import multiprocessing as mp
@@ -11,6 +11,7 @@ from tqdm.auto import tqdm
 def boat_line(q_Type: str, len_q, max_group_s, min_group_s, passengers):
     """
     This function will simulate the process of filling boats until the queue is empty
+    TODO: add @mir implementation
     :param len_q: is the length of the queue
     :param max_group_s: is the maximum group size
     :param min_group_s: is the minimum group size
@@ -59,5 +60,5 @@ def stochastic_roller_coaster(
     t_term = time.time()
     results = np.array(results)
 
-    print(f"{q_Type} TOOK  {t_term - t_init} SECONDS")
+    print(f"\n{q_Type} TOOK  {t_term - t_init} SECONDS")
     return results

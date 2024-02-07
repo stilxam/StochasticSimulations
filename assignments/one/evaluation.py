@@ -14,12 +14,13 @@ def confidence_interval(results)->None:
     z = 1.96 # 95% confidence interval
     lower = mean - z * (std / n**0.5)
     upper = mean + z * (std / n**0.5)
-    print(f"MEAN: {mean} STD: {std}")
+    print(f"MEAN: {mean}, STD: {std}")
     print(f"CI: [{lower}, {upper}]")
+
 
 def main()->None:
     """
-    This function will compare the performance of the two queue systems
+    This function compares the performance of the two queue systems
     :return: None
     """
     base_results = stochastic_roller_coaster(
