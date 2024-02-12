@@ -4,6 +4,8 @@ import random
 
 class Queue:
     def __init__(self, length, high, low):
+        self.high = high
+        self.low = low
         if high == low:
             self.q = high * np.ones(length)
         else:
@@ -35,6 +37,11 @@ class Queue:
 
     def __str__(self):
         return f"{self.q}"
+    
+    def copy(self):
+        new_queue = Queue(len(self), self.high, self.low)
+        new_queue.q = self.q.copy()
+        return new_queue
 
 
 def main():

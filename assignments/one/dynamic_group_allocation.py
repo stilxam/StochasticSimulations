@@ -1,58 +1,7 @@
-from aux_functions.Boat import Boat
 from aux_functions.Queue import Queue
-from aux_functions.Boat import dynamic_group_assignment
 import numpy as np
 
-def single_line(queue: Queue, passengers):
-    """
-    This function will simulate the process of filling a boat with passengers
-    :param queue: takes a queue object
-    :param passengers: Max number of passengers in the boat
-    :return: the queue after the boat has been filled
-    """
-    boat = Boat(n=passengers)
-    n_its = 0
-    while n_its <= passengers:
-        if len(queue) == 0:
-            break
-        group = queue.head()
-        if boat.is_filling_possible(group):
-            boat.fill_boat(group)
-            n_its += 1
-        elif not boat.is_filling_possible(group):
-            queue.stack(group)
-            break
-    return queue
-def two_lines(queue: Queue, passengers):
-    """
-    This function will simulate the process of filling a boat with passengers with a normal queue and a queue of singles
-    :param queue: Queue object
-    :param passengers: Max number of passengers in the boat
-    :return: Queue after the boat has been filled
-    """
-    boat = Boat(n=passengers)
-    n_its = 0
-    while n_its <= passengers:
-        if len(queue) == 0:
-            break
-        group = queue.head()
-        if boat.is_filling_possible(group):
-            boat.fill_boat(group)
-            n_its += 1
-        elif not boat.is_filling_possible(group):
-            queue.stack(group)
-            if queue.is_singles() and boat.is_filling_possible(1):
-                queue.pop_singles()
-                boat.fill_boat(1)
-                n_its += 1
-            else:
-                break
-    return queue
-
-# def optimized_lines(queue: Queue, passengers):
-
-
-def dynamic_group_assignment(queue: Queue, boat_capacity: int):
+def most_fitted_passengers(queue: Queue, boat_capacity):
     """
     Given queue (a list of groups), and a boat capacity, uses dynamic programing to return a subset of groups that can fit in the
     boat while maximizing the number of passengers in the boat
@@ -99,5 +48,24 @@ def dynamic_group_assignment(queue: Queue, boat_capacity: int):
         # remove the group from the queue
         queue.q = np.delete(queue.q, index)
 
-    return queue, m[size_of_queue, boat_capacity]
     
+    #TODO: return the updated queue with the groups that fit in the boat removed
+    return queue, m[size_of_queue, boat_capacity]
+
+
+
+
+#TODO: turn this into unit tests
+# test_queue = Queue(length=4,high=2, low=2)
+
+# for group in range(len(test_queue)):
+#     group = test_queue.head()
+# # i.e input groups
+# test_groups = [2,2,2,2]
+
+# for i in range(len(test_groups)):
+#     test_queue.stack(test_groups[i])
+
+# result = most_fitted_passengers(test_queue,6)
+
+# print(result[0].__str__())
