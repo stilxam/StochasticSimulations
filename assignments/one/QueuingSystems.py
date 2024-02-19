@@ -7,7 +7,7 @@ def single_line(queue: Queue, boat_capacity):
     """
     This function will simulate the process of filling a boat with boat_capacity
     :param queue: takes a queue object
-    :param boat_capacity: Max number of boat_capacity in the boat
+    :param boat_capacity: Maximum capacity of the boat
     :return: the queue after the boat has been filled, and the number of people in the boat
     """
     boat = Boat(n=boat_capacity)
@@ -32,7 +32,7 @@ def two_lines(queue: Queue, boat_capacity):
     """
     This function will simulate the process of filling a boat with boat_capacity with a normal queue and a queue of singles
     :param queue: Queue object
-    :param boat_capacity: Max number of boat_capacity in the boat
+    :param boat_capacity: Maximum capacity of the boat
     :return: Queue after the boat has been filled, and the number of people in the boat
     """
     boat = Boat(n=boat_capacity)
