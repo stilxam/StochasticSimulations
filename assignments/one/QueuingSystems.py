@@ -1,70 +1,78 @@
 from aux_functions.Boat import Boat
 from aux_functions.Queue import Queue
-from aux_functions.Boat import dynamic_group_assignment
+# from aux_functions.Boat import dynamic_group_assignment
 import numpy as np
 
-def single_line(queue: Queue, passengers):
+def single_line(queue: Queue, boat_capacity):
     """
-    This function will simulate the process of filling a boat with passengers
+    This function will simulate the process of filling a boat with boat_capacity
     :param queue: takes a queue object
-    :param passengers: Max number of passengers in the boat
-    :return: the queue after the boat has been filled
+    :param boat_capacity: Max number of boat_capacity in the boat
+    :return: the queue after the boat has been filled, and the number of people in the boat
     """
-    boat = Boat(n=passengers)
-    n_its = 0
-    while n_its <= passengers:
+    boat = Boat(n=boat_capacity)
+    # boat occupancy
+    boat_occupancy = 0
+
+    while boat_occupancy <= boat_capacity:
         if len(queue) == 0:
             break
         group = queue.head()
         if boat.is_filling_possible(group):
             boat.fill_boat(group)
-            n_its += 1
+            # update the boat occupancy
+            boat_occupancy += group
         elif not boat.is_filling_possible(group):
             queue.stack(group)
             break
-    return queue
-def two_lines(queue: Queue, passengers):
+    #TODO: RETURN THE NUMBER OF PEOPLE IN THE BOAT
+    return queue, boat_occupancy
+
+def two_lines(queue: Queue, boat_capacity):
     """
-    This function will simulate the process of filling a boat with passengers with a normal queue and a queue of singles
+    This function will simulate the process of filling a boat with boat_capacity with a normal queue and a queue of singles
     :param queue: Queue object
-    :param passengers: Max number of passengers in the boat
-    :return: Queue after the boat has been filled
+    :param boat_capacity: Max number of boat_capacity in the boat
+    :return: Queue after the boat has been filled, and the number of people in the boat
     """
-    boat = Boat(n=passengers)
-    n_its = 0
-    while n_its <= passengers:
+    boat = Boat(n=boat_capacity)
+
+    # boat occupancy
+    boat_occupancy = 0
+
+    while boat_occupancy <= boat_capacity:
         if len(queue) == 0:
             break
         group = queue.head()
-        if boat.is_filling_possible(group):
+        # we give priority to groups over single riders
+        # however if the next group can't fit in the boat, we will give priority to single riders 
+        if ( (not group == 1) and (boat.is_filling_possible(group)) ):
             boat.fill_boat(group)
-            n_its += 1
+            boat_occupancy += group
         elif not boat.is_filling_possible(group):
             queue.stack(group)
             if queue.is_singles() and boat.is_filling_possible(1):
-                queue.pop_singles()
-                boat.fill_boat(1)
-                n_its += 1
+                single_rider = queue.pop_singles()
+                boat.fill_boat(single_rider)
+                boat_occupancy += single_rider
             else:
                 break
-    return queue
+    #TODO: RETURN THE NUMBER OF PEOPLE IN THE BOAT
+    return queue, boat_occupancy
 
-# def optimized_lines(queue: Queue, passengers):
-
-
-def dynamic_group_assignment(queue: Queue, boat_capacity: int):
+def dynamic_queue(queue: Queue, boat_capacity: int):
     """
     Given queue (a list of groups), and a boat capacity, uses dynamic programing to return a subset of groups that can fit in the
-    boat while maximizing the number of passengers in the boat
+    boat while maximizing the number of boat_capacity in the boat
 
     Args:
-        queue (Queue): The queue of passengers, where each element is a group of passengers.
+        queue (Queue): The queue of boat_capacity, where each element is a group of boat_capacity.
         boat_capacity (int): The maximum capacity of the boat.
 
     Returns:
         tuple: A tuple containing two elements:
-            - A list of the most fitted passengers that can fit in the boat.
-            - The total number of the passengers in the boat.
+            - A list of the most fitted boat_capacity that can fit in the boat.
+            - The total number of the boat_capacity in the boat.
     """
     queue_local_copy = queue.copy()
     size_of_queue = len(queue_local_copy)
