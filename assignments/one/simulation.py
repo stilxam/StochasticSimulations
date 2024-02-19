@@ -138,7 +138,6 @@ def simulate_boat_line(q_type: str, len_q, max_group_s, min_group_s, boat_capaci
     
 def stochastic_roller_coaster(
         n_runs: int = 5,
-        len_q: int = 10,
         max_group_s: int = 8,
         min_group_s: int = 1,
         boat_capacity = 8,
@@ -159,6 +158,9 @@ def stochastic_roller_coaster(
     results = {}
 
     t_init = time.time()
+
+    rng = np.random.default_rng(12345)
+    len_q = rng.integers(0,10)
 
     # Create a list of tasks for all queue types
     tasks = [(q_type, len_q, max_group_s, min_group_s, boat_capacity, max_time_interval) for q_type in queue_types for _ in range(n_runs)]
