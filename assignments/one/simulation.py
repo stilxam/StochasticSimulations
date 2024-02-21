@@ -8,7 +8,7 @@ import multiprocessing as mp
 import random
 import time
 from tqdm.auto import tqdm
-from evaluation import confidence_interval, matplotlib_plot_results
+from evaluation import confidence_interval, matplotlib_plot_results, queue_plot_results
 
 
 def simulate_boat_line(q_type: str, len_q, max_group_s, min_group_s, boat_capacity, max_time_interval: int, min_q_s,
@@ -142,7 +142,7 @@ def simulate_boat_line(q_type: str, len_q, max_group_s, min_group_s, boat_capaci
 #     return results
 
 def stochastic_roller_coaster(
-        n_runs: int = 5,
+        n_runs: int = 100,
         max_group_s: int = 8,
         min_group_s: int = 1,
         max_q_s: int = 5,
@@ -166,6 +166,7 @@ def stochastic_roller_coaster(
 
     t_init = time.time()
 
+    #
     rng = np.random.default_rng(12345)
     len_q = rng.integers(min_q_s, max_q_s)
 
@@ -194,15 +195,21 @@ def stochastic_roller_coaster(
     print("\nDYNAMIC")
     dynamic_q_ci: Tuple[float, float] = confidence_interval(results["DYNAMIC"][:, 4])
 
-    # matplotlib_plot_results(
-    #     "Queue Length",
-    #     results["BASE"][:, 4],
-    #     base_q_ci,
-    #     results["Singles"][:, 4],
-    #     singles_q_t_ci,
-    #     results["Dynamic"][:, 4],
-    #     dynamic_q_ci,
-    # )
+    queue_plot_results(
+        "Queue Length",
+        results["BASE"][:, 4],
+        base_q_ci,
+        results["SINGLES"][:, 2],
+        singles_q_t_ci,
+        results["SINGLES"][:, 1],
+        singles_q_r_ci,
+        results["SINGLES"][:, 0],
+        singles_q_s_ci,
+        results["DYNAMIC"][:, 4],
+        dynamic_q_ci,
+    ).show()
+
+
 
     print("Boat Filling Confidence Intervals: \n")
     print("\nBASE")
@@ -213,23 +220,23 @@ def stochastic_roller_coaster(
     dynamic_boat_ci: Tuple[float, float] = confidence_interval(results["DYNAMIC"][:, 3])
 
     matplotlib_plot_results(
-        "Queue Length",
+        "Boat Filling",
         results["BASE"][:, 3],
-        base_q_ci,
-        results["Singles"][:, 3],
-        singles_q_t_ci,
-        results["Dynamic"][:, 3],
-        dynamic_q_ci,
-    )
+        base_boat_ci,
+        results["SINGLES"][:, 3],
+        singles_boat_ci,
+        results["DYNAMIC"][:, 3],
+        dynamic_boat_ci,
+    ).show()
 
     t_term = time.time()
 
     print(f"\nALL SIMULATIONS TOOK  {round(t_term - t_init, 2)} SECONDS")
 
     # Print the results in a presentable fashion
-    for q_type, result in results.items():
-        print(f"\nQUEUE TYPE: {q_type}")
-        print(f"RESULTS: {result}")
+    # for q_type, result in results.items():
+    #     print(f"\nQUEUE TYPE: {q_type}")
+    #     print(f"RESULTS: {result}")
 
     return results
 
