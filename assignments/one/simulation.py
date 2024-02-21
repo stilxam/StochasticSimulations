@@ -1,3 +1,5 @@
+from typing import Tuple
+
 from aux_functions.Queue import Queue
 from QueuingSystems import single_line, two_lines, dynamic_queue
 import numpy as np
@@ -6,8 +8,11 @@ import multiprocessing as mp
 import random
 import time
 from tqdm.auto import tqdm
+from evaluation import confidence_interval, matplotlib_plot_results
 
-def simulate_boat_line(q_type: str, len_q, max_group_s, min_group_s, boat_capacity ,  max_time_interval: int):
+
+def simulate_boat_line(q_type: str, len_q, max_group_s, min_group_s, boat_capacity, max_time_interval: int, min_q_s,
+                       max_q_s):
     """
     Simulates the queueing system for a boat ride.
 
@@ -24,7 +29,7 @@ def simulate_boat_line(q_type: str, len_q, max_group_s, min_group_s, boat_capaci
             If q_type is "SINGLES", the tuple also contains the mean length of the singles queue,
             mean length of the regular queue, and mean total queue length.
     """
-        
+
     # Stores the length of the queue at the end of each time interval.
     # The value at index i is the length of the queue at the end of time interval i.
     queue_length_per_interval = np.zeros(max_time_interval)
@@ -46,11 +51,11 @@ def simulate_boat_line(q_type: str, len_q, max_group_s, min_group_s, boat_capaci
 
     while max_time_interval > 0:
         if q_type == "BASE":
-            Q, boat_occupancy = single_line(Q, boat_capacity) 
+            Q, boat_occupancy = single_line(Q, boat_capacity)
         elif q_type == "SINGLES":
-            Q, boat_occupancy = two_lines(Q, boat_capacity) 
+            Q, boat_occupancy = two_lines(Q, boat_capacity)
         elif q_type == "DYNAMIC":
-            Q, boat_occupancy = dynamic_queue(Q, boat_capacity) 
+            Q, boat_occupancy = dynamic_queue(Q, boat_capacity)
 
         if q_type in ["BASE", "DYNAMIC"]:
             # Calculate the number of people in the queue.
@@ -69,7 +74,7 @@ def simulate_boat_line(q_type: str, len_q, max_group_s, min_group_s, boat_capaci
 
         # Generate new arrivals for next iteration and add them to the end of the queue.
         rng = np.random.default_rng(12345)
-        len_q = rng.integers(0, 10)
+        len_q = rng.integers(min_q_s, max_q_s)
 
         new_arrival = Queue(length=len_q, high=max_group_s, low=min_group_s)
         Q.enqueue(new_arrival.q)
@@ -89,10 +94,10 @@ def simulate_boat_line(q_type: str, len_q, max_group_s, min_group_s, boat_capaci
         mean_boat_occupancy = np.mean(boat_occupancy_per_interval)
 
         # Calculate the mean total queue length.
-        total_queue = np.concatenate([singles_queue_length_per_interval, regular_queue_length_per_interval])
+        total_queue = singles_queue_length_per_interval + regular_queue_length_per_interval
         mean_total_queue_length = np.mean(total_queue)
 
-        return mean_length_singles, mean_length_regular, mean_boat_occupancy, mean_total_queue_length
+        return mean_length_singles, mean_length_regular, mean_total_queue_length, mean_boat_occupancy, np.nan
 
     else:
         # Calculate the mean queue length.
@@ -101,7 +106,7 @@ def simulate_boat_line(q_type: str, len_q, max_group_s, min_group_s, boat_capaci
         # Calculate the mean boat occupancy.
         mean_boat_occupancy = np.mean(boat_occupancy_per_interval)
 
-        return mean_queue_length, mean_boat_occupancy
+        return np.nan, np.nan, np.nan, mean_boat_occupancy, mean_queue_length
 
 
 # def stochastic_roller_coaster(
@@ -135,12 +140,14 @@ def simulate_boat_line(q_type: str, len_q, max_group_s, min_group_s, boat_capaci
 
 #     print(f"\n{q_type} TOOK  {round(t_term - t_init, 2)} SECONDS")
 #     return results
-    
+
 def stochastic_roller_coaster(
         n_runs: int = 5,
         max_group_s: int = 8,
         min_group_s: int = 1,
-        boat_capacity = 8,
+        max_q_s: int = 5,
+        min_q_s: int = 0,
+        boat_capacity=8,
         max_time_interval: int = 1000,
         n_jobs=mp.cpu_count() - 1
 ) -> dict:
@@ -160,17 +167,60 @@ def stochastic_roller_coaster(
     t_init = time.time()
 
     rng = np.random.default_rng(12345)
-    len_q = rng.integers(0,10)
+    len_q = rng.integers(min_q_s, max_q_s)
 
     # Create a list of tasks for all queue types
-    tasks = [(q_type, len_q, max_group_s, min_group_s, boat_capacity, max_time_interval) for q_type in queue_types for _ in range(n_runs)]
+    tasks = [(q_type, len_q, max_group_s, min_group_s, boat_capacity, max_time_interval, min_q_s, max_q_s) for q_type in
+             queue_types for _
+             in range(n_runs)]
 
     # Run all tasks in parallel
     output = Parallel(n_jobs=n_jobs)(delayed(simulate_boat_line)(*task) for task in tasks)
 
     # Split the output by queue type
+
     for i, q_type in enumerate(queue_types):
-        results[q_type] = np.array(output[i*n_runs:(i+1)*n_runs])
+        results[q_type] = np.array(output[i * n_runs:(i + 1) * n_runs])
+
+    print("Queue Length Confidence Intervals: \n")
+    print("\nBASE")
+    base_q_ci: Tuple[float, float] = confidence_interval(results["BASE"][:, 4])
+    print("\nSINGLES Total")
+    singles_q_t_ci: Tuple[float, float] = confidence_interval(results["SINGLES"][:, 2])
+    print("\nSINGLES Regular")
+    singles_q_r_ci: Tuple[float, float] = confidence_interval(results["SINGLES"][:, 1])
+    print("\nSINGLES Single")
+    singles_q_s_ci: Tuple[float, float] = confidence_interval(results["SINGLES"][:, 0])
+    print("\nDYNAMIC")
+    dynamic_q_ci: Tuple[float, float] = confidence_interval(results["DYNAMIC"][:, 4])
+
+    # matplotlib_plot_results(
+    #     "Queue Length",
+    #     results["BASE"][:, 4],
+    #     base_q_ci,
+    #     results["Singles"][:, 4],
+    #     singles_q_t_ci,
+    #     results["Dynamic"][:, 4],
+    #     dynamic_q_ci,
+    # )
+
+    print("Boat Filling Confidence Intervals: \n")
+    print("\nBASE")
+    base_boat_ci: Tuple[float, float] = confidence_interval(results["BASE"][:, 3])
+    print("\nSINGLES Total")
+    singles_boat_ci: Tuple[float, float] = confidence_interval(results["SINGLES"][:, 3])
+    print("\nDYNAMIC")
+    dynamic_boat_ci: Tuple[float, float] = confidence_interval(results["DYNAMIC"][:, 3])
+
+    matplotlib_plot_results(
+        "Queue Length",
+        results["BASE"][:, 3],
+        base_q_ci,
+        results["Singles"][:, 3],
+        singles_q_t_ci,
+        results["Dynamic"][:, 3],
+        dynamic_q_ci,
+    )
 
     t_term = time.time()
 
@@ -184,7 +234,6 @@ def stochastic_roller_coaster(
     return results
 
 
-
 # # we just used this to see if the functions work
 # def main():
 #     max_group_s: int = 8
@@ -196,7 +245,7 @@ def stochastic_roller_coaster(
 
 #     # store return values of simulate_boat_queue with q_type = "BASE"
 #     m_length, m_boat_occupancy = simulate_boat_line("BASE", len_q, max_group_s, min_group_s, boat_capacity ,  1000)
-    
+
 #     print("Base", m_length, m_boat_occupancy)
 #     # store return values of simulate_boat_queue with q_type = "SINGLES"
 #     m_length_singles, m_length_regular, m_boat_occupancy, m_total_queue_length = simulate_boat_line("SINGLES", len_q, max_group_s, min_group_s, boat_capacity ,  1000)
