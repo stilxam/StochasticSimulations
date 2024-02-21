@@ -38,7 +38,7 @@ class Queue:
         self.q = np.concatenate([np.array([head]), self.q])
 
     def enqueue(self, head):
-        self.q = np.concatenate([self.q, head])
+        self.q = np.concatenate([head, self.q])
 
     def __str__(self):
         return f"{self.q}"
