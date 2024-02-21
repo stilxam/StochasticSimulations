@@ -84,7 +84,7 @@ def matplotlib_plot_results(
     ax[1].set_ylim(0, 0.8 * max_height_frequency)
 
     # save the figure
-    plt.savefig(f'figures/{title}_Q_systems.png')
+    # plt.savefig(f'figures/{title}_Q_systems.png')
 
     # show the figure
     return plt
@@ -172,7 +172,7 @@ def queue_plot_results(
     ax[1].set_ylim(0, 0.8 * max_height_frequency)
 
     # save the figure
-    plt.savefig(f'figures/{title}_Q_systems.png')
+    # plt.savefig(f'figures/{title}_Q_systems.png')
 
     # show the figure
     return plt
