@@ -45,6 +45,7 @@ def simulate_boat_line(q_type: str, len_q, max_group_s, min_group_s, boat_capaci
 
     # Initialize queue.
     Q = Queue(length=len_q, high=max_group_s, low=min_group_s)
+    print("")
 
     # Time interval iterator.
     i = 0
@@ -56,6 +57,7 @@ def simulate_boat_line(q_type: str, len_q, max_group_s, min_group_s, boat_capaci
             Q, boat_occupancy = two_lines(Q, boat_capacity)
         elif q_type == "DYNAMIC":
             Q, boat_occupancy = dynamic_queue(Q, boat_capacity)
+            print("")
 
         if q_type in ["BASE", "DYNAMIC"]:
             # Calculate the number of people in the queue.
@@ -82,7 +84,7 @@ def simulate_boat_line(q_type: str, len_q, max_group_s, min_group_s, boat_capaci
 
         new_arrival = Queue(length=len_q, high=max_group_s, low=min_group_s)
         Q.enqueue(new_arrival.q)
-
+        print("")
         # Update the time interval and iterator.
         max_time_interval -= 1
         i += 1
@@ -105,8 +107,8 @@ def simulate_boat_line(q_type: str, len_q, max_group_s, min_group_s, boat_capaci
 
     else:
         # Calculate the mean queue length.
-        mean_queue_length = np.mean(queue_length_per_interval)
-
+        mean_queue_length = np.mean(np.array(queue_length_per_interval))
+        print("")
         # Calculate the mean boat occupancy.
         mean_boat_occupancy = np.mean(boat_occupancy_per_interval)
 
@@ -146,12 +148,12 @@ def simulate_boat_line(q_type: str, len_q, max_group_s, min_group_s, boat_capaci
 #     return results
 
 def stochastic_roller_coaster(
-        n_runs: int = 10,
-        max_group_s: int = 8,
+        n_runs: int = 200,
+        max_group_s: int = 5,
         min_group_s: int = 1,
         max_q_s: int = 5,
         min_q_s: int = 0,
-        boat_capacity=8,
+        boat_capacity = 8,
         max_time_interval: int = 1000,
         n_jobs=mp.cpu_count() - 1
 ) -> dict:
@@ -195,7 +197,7 @@ def stochastic_roller_coaster(
     print("Queue Length Confidence Intervals: \n")
     print("\nBASE")
     base_q_ci: Tuple[float, float] = confidence_interval(results["BASE"][:, 4])
-    print("\nSINGLES Total")
+    print("\nSINGLES Total") 
     singles_q_t_ci: Tuple[float, float] = confidence_interval(results["SINGLES"][:, 2])
     print("\nSINGLES Regular")
     singles_q_r_ci: Tuple[float, float] = confidence_interval(results["SINGLES"][:, 1])
@@ -204,77 +206,77 @@ def stochastic_roller_coaster(
     print("\nDYNAMIC")
     dynamic_q_ci: Tuple[float, float] = confidence_interval(results["DYNAMIC"][:, 4])
 
-    # queue_plot_results(
-    #     "Queue Length",
-    #     results["BASE"][:, 4],
-    #     base_q_ci,
-    #     results["SINGLES"][:, 2],
-    #     singles_q_t_ci,
-    #     results["SINGLES"][:, 1],
-    #     singles_q_r_ci,
-    #     results["SINGLES"][:, 0],
-    #     singles_q_s_ci,
-    #     results["DYNAMIC"][:, 4],
-    #     dynamic_q_ci,
-    # ).show()
+    queue_plot_results(
+        "Queue Length",
+        results["BASE"][:, 4],
+        base_q_ci,
+        results["SINGLES"][:, 2],
+        singles_q_t_ci,
+        results["SINGLES"][:, 1],
+        singles_q_r_ci,
+        results["SINGLES"][:, 0],
+        singles_q_s_ci,
+        results["DYNAMIC"][:, 4],
+        dynamic_q_ci,
+    ).show()
 
 
 
-    # print("Boat Filling Confidence Intervals: \n")
-    # print("\nBASE")
-    # base_boat_ci: Tuple[float, float] = confidence_interval(results["BASE"][:, 3])
-    # print("\nSINGLES Total")
-    # singles_boat_ci: Tuple[float, float] = confidence_interval(results["SINGLES"][:, 3])
-    # print("\nDYNAMIC")
-    # dynamic_boat_ci: Tuple[float, float] = confidence_interval(results["DYNAMIC"][:, 3])
+    print("Boat Filling Confidence Intervals: \n")
+    print("\nBASE")
+    base_boat_ci: Tuple[float, float] = confidence_interval(results["BASE"][:, 3])
+    print("\nSINGLES Total")
+    singles_boat_ci: Tuple[float, float] = confidence_interval(results["SINGLES"][:, 3])
+    print("\nDYNAMIC")
+    dynamic_boat_ci: Tuple[float, float] = confidence_interval(results["DYNAMIC"][:, 3])
 
-    # matplotlib_plot_results(
-    #     "Boat Filling",
-    #     results["BASE"][:, 3],
-    #     base_boat_ci,
-    #     results["SINGLES"][:, 3],
-    #     singles_boat_ci,
-    #     results["DYNAMIC"][:, 3],
-    #     dynamic_boat_ci,
-    # ).show()
+    matplotlib_plot_results(
+        "Boat Filling",
+        results["BASE"][:, 3],
+        base_boat_ci,
+        results["SINGLES"][:, 3],
+        singles_boat_ci,
+        results["DYNAMIC"][:, 3],
+        dynamic_boat_ci,
+    ).show()
 
-    # t_term = time.time()
+    t_term = time.time()
 
-    # print(f"\nALL SIMULATIONS TOOK  {round(t_term - t_init, 2)} SECONDS")
+    print(f"\nALL SIMULATIONS TOOK  {round(t_term - t_init, 2)} SECONDS")
 
     # Print the results in a presentable fashion
-    for q_type, result in results.items():
-        print(f"\nQUEUE TYPE: {q_type}")
-        print(f"RESULTS: {result}")
+    # for q_type, result in results.items():
+    #     print(f"\nQUEUE TYPE: {q_type}")
+    #     print(f"RESULTS: {result}")
 
     return results
 
 
 # # # we just used this to see if the functions work
-# def main():
-#     max_group_s: int = 8
-#     min_group_s: int = 1
-#     boat_capacity = 8
-#     max_q_s: int = 5,
-#     min_q_s: int = 0,
+def main():
+    max_group_s: int = 5
+    min_group_s: int = 1
+    boat_capacity = 8
+    max_q_s: int = 5,
+    min_q_s: int = 0,
 
-#     possible_group_arrivals = [0,1,2,3]
-#     probabilities = [0.1,0.2,0.3,0.4]
-#     len_q = np.random.choice(possible_group_arrivals, p=probabilities)
+    possible_group_arrivals = [0,1,2,3]
+    probabilities = [0.1,0.2,0.3,0.4]
+    len_q = np.random.choice(possible_group_arrivals, p=probabilities)
 
-#     # # store return values of simulate_boat_queue with q_type = "BASE"
-#     # m_length, m_boat_occupancy = simulate_boat_line("BASE", len_q, max_group_s, min_group_s, boat_capacity ,  1000)
+    # # store return values of simulate_boat_queue with q_type = "BASE"
+    # m_length, m_boat_occupancy = simulate_boat_line("BASE", len_q, max_group_s, min_group_s, boat_capacity ,  1000)
 
-#     # print("Base", m_length, m_boat_occupancy)
-#     # # store return values of simulate_boat_queue with q_type = "SINGLES"
-#     # m_length_singles, m_length_regular, m_boat_occupancy, m_total_queue_length = simulate_boat_line("SINGLES", len_q, max_group_s, min_group_s, boat_capacity ,  1000)
-#     # print("SINGLES", m_length_singles, m_length_regular, m_boat_occupancy, m_total_queue_length )
+    # print("Base", m_length, m_boat_occupancy)
+    # # store return values of simulate_boat_queue with q_type = "SINGLES"
+    # m_length_singles, m_length_regular, m_boat_occupancy, m_total_queue_length = simulate_boat_line("SINGLES", len_q, max_group_s, min_group_s, boat_capacity ,  1000)
+    # print("SINGLES", m_length_singles, m_length_regular, m_boat_occupancy, m_total_queue_length )
 
-#     # store return values of simulate_boat_queue with q_type = "DYNAMIC"
-#     for i in range(2):
-#         n, n, n, m_boat_occupancy, m_length = simulate_boat_line("DYNAMIC", len_q, max_group_s, min_group_s, boat_capacity ,  1000, min_q_s, max_q_s)
-#         print("Dynamic", m_length, m_boat_occupancy, "\n")
+    # store return values of simulate_boat_queue with q_type = "DYNAMIC"
+    n, n, n, m_boat_occupancy, m_length = simulate_boat_line("DYNAMIC", len_q, max_group_s, min_group_s, boat_capacity ,  1000, min_q_s, max_q_s)
+    print("Dynamic", m_length, m_boat_occupancy, "\n")
 
 if __name__ == "__main__":
     r = stochastic_roller_coaster()
+
 
