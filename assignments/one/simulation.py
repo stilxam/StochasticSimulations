@@ -45,7 +45,7 @@ def simulate_boat_line(q_type: str, len_q, max_group_s, min_group_s, boat_capaci
 
     # Initialize queue.
     Q = Queue(length=len_q, high=max_group_s, low=min_group_s)
-    print("")
+     
 
     # Time interval iterator.
     i = 0
@@ -57,7 +57,7 @@ def simulate_boat_line(q_type: str, len_q, max_group_s, min_group_s, boat_capaci
             Q, boat_occupancy = two_lines(Q, boat_capacity)
         elif q_type == "DYNAMIC":
             Q, boat_occupancy = dynamic_queue(Q, boat_capacity)
-            print("")
+             
 
         if q_type in ["BASE", "DYNAMIC"]:
             # Calculate the number of people in the queue.
@@ -84,7 +84,6 @@ def simulate_boat_line(q_type: str, len_q, max_group_s, min_group_s, boat_capaci
 
         new_arrival = Queue(length=len_q, high=max_group_s, low=min_group_s)
         Q.enqueue(new_arrival.q)
-        print("")
         # Update the time interval and iterator.
         max_time_interval -= 1
         i += 1
@@ -108,7 +107,6 @@ def simulate_boat_line(q_type: str, len_q, max_group_s, min_group_s, boat_capaci
     else:
         # Calculate the mean queue length.
         mean_queue_length = np.mean(np.array(queue_length_per_interval))
-        print("")
         # Calculate the mean boat occupancy.
         mean_boat_occupancy = np.mean(boat_occupancy_per_interval)
 
@@ -231,7 +229,7 @@ def stochastic_roller_coaster(
     dynamic_boat_ci: Tuple[float, float] = confidence_interval(results["DYNAMIC"][:, 3])
 
     matplotlib_plot_results(
-        "Boat Filling",
+        "Seats Filled Per Boat ",
         results["BASE"][:, 3],
         base_boat_ci,
         results["SINGLES"][:, 3],

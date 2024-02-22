@@ -30,8 +30,7 @@ class Queue:
         indexes = np.where(self.q == 1)[0]
         first_one = indexes[0]
         self.q = np.concatenate([self.q[:first_one], self.q[first_one + 1:]])
-        
-        #TODO: DO WE NEED RETURN?
+
         return 1
 
     def stack(self, head):
