@@ -9,6 +9,7 @@ import random
 import time
 from tqdm.auto import tqdm
 from evaluation import confidence_interval, matplotlib_plot_results, queue_plot_results
+import os
 
 
 def simulate_boat_line(q_type: str, len_q, max_group_s, min_group_s, boat_capacity, max_time_interval: int, min_q_s,
@@ -146,7 +147,7 @@ def simulate_boat_line(q_type: str, len_q, max_group_s, min_group_s, boat_capaci
 #     return results
 
 def stochastic_roller_coaster(
-        n_runs: int = 200,
+        n_runs: int = 10000,
         max_group_s: int = 5,
         min_group_s: int = 1,
         max_q_s: int = 5,
@@ -210,10 +211,10 @@ def stochastic_roller_coaster(
         base_q_ci,
         results["SINGLES"][:, 2],
         singles_q_t_ci,
-        results["SINGLES"][:, 1],
-        singles_q_r_ci,
         results["SINGLES"][:, 0],
         singles_q_s_ci,
+        results["SINGLES"][:, 1],
+        singles_q_r_ci,
         results["DYNAMIC"][:, 4],
         dynamic_q_ci,
     ).show()
@@ -275,6 +276,8 @@ def main():
     print("Dynamic", m_length, m_boat_occupancy, "\n")
 
 if __name__ == "__main__":
+    if not os.path.exists('FIGURES'):
+        os.makedirs('FIGURES')
     r = stochastic_roller_coaster()
 
 
