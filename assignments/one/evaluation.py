@@ -45,7 +45,7 @@ def matplotlib_plot_results(
     :param dynamic_ci: the confidence interval of the two queue system
     :return: None
     """
-    max_height_frequency: float = 0.2
+    # max_height_frequency: float = 0.2
     # fig, ax = plt.subplots(nrows=1, ncols=3, figsize=(15, 5), sharex=True, sharey=True)
 
     # # plot the results of the Model without single-rider queue
@@ -97,9 +97,18 @@ def matplotlib_plot_results(
     for i, queue_system in enumerate(queue_systems):
         fig, ax = plt.subplots(figsize=(5, 5))
 
+        # # plot the results of the queue system
+        # ax.hist(queue_system["results"], bins=40, alpha=0.5, label=queue_system["label"], color=queue_system["color"],
+        #         weights=np.ones_like(queue_system["results"]) / len(queue_system["results"]))
+        # ax.fill_between(queue_system["ci"], 0, max_height_frequency, color='green', alpha=0.6, label='Confidence Interval')
+
         # plot the results of the queue system
-        ax.hist(queue_system["results"], bins=40, alpha=0.5, label=queue_system["label"], color=queue_system["color"],
-                weights=np.ones_like(queue_system["results"]) / len(queue_system["results"]))
+        n, bins, patches = ax.hist(queue_system["results"], bins=40, alpha=0.5, label=queue_system["label"], color=queue_system["color"],
+            weights=np.ones_like(queue_system["results"]) / len(queue_system["results"]))
+    
+        # calculate the maximum frequency
+        max_height_frequency = max(n)
+
         ax.fill_between(queue_system["ci"], 0, max_height_frequency, color='green', alpha=0.6, label='Confidence Interval')
 
         # add legend
@@ -113,7 +122,7 @@ def matplotlib_plot_results(
         fig.suptitle(f'{queue_system["label"]}\nn_runs={len(queue_system["results"])}', fontsize=16)
 
         # set y lim
-        ax.set_ylim(0, 0.8 * max_height_frequency)
+        # ax.set_ylim(0, 0.8 * max_height_frequency)
 
         # save the figure
         plt.savefig(f'FIGURES/{title}_Q_system_{i}.png')
@@ -153,7 +162,7 @@ def queue_plot_results(
     :param dynamic_ci: the confidence interval of the two queue system
     :return: None
     """
-    max_height_frequency: float = 0.2
+    # max_height_frequency: float = 0.2
     # fig, ax = plt.subplots(nrows=1, ncols=5, figsize=(30, 5),  sharey=True)
 
     # # plot the results of the Model without single-rider queue
@@ -220,9 +229,18 @@ def queue_plot_results(
     for i, queue_system in enumerate(queue_systems):
         fig, ax = plt.subplots(figsize=(5, 5))
 
+        # # plot the results of the queue system
+        # ax.hist(queue_system["results"], bins=40, alpha=0.5, label=queue_system["label"], color=queue_system["color"],
+        #         weights=np.ones_like(queue_system["results"]) / len(queue_system["results"]))
+        # ax.fill_between(queue_system["ci"], 0, max_height_frequency, color='green', alpha=0.6, label='Confidence Interval')
+
         # plot the results of the queue system
-        ax.hist(queue_system["results"], bins=40, alpha=0.5, label=queue_system["label"], color=queue_system["color"],
-                weights=np.ones_like(queue_system["results"]) / len(queue_system["results"]))
+        n, bins, patches = ax.hist(queue_system["results"], bins=40, alpha=0.5, label=queue_system["label"], color=queue_system["color"],
+            weights=np.ones_like(queue_system["results"]) / len(queue_system["results"]))
+
+        # calculate the maximum frequency
+        max_height_frequency = max(n)
+
         ax.fill_between(queue_system["ci"], 0, max_height_frequency, color='green', alpha=0.6, label='Confidence Interval')
 
         # add legend
@@ -236,7 +254,7 @@ def queue_plot_results(
         fig.suptitle(f'{queue_system["xlabel"]}\nn_runs = {len(queue_system["results"])}', fontsize=16)
 
         # set y lim
-        ax.set_ylim(0, 0.8 * max_height_frequency)
+        # ax.set_ylim(0, 0.8 * max_height_frequency)
 
         # save the figure
         plt.savefig(f'FIGURES/{title}_Q_system_{i}.png')
