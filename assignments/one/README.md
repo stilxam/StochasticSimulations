@@ -1,5 +1,6 @@
 # Assignment 1 - README
-by [Maxwell Litsios](mailto:m.l.h.litsios@student.tue.nl), [Mir](mailto:), and [Pranav](mailto:)
+by [Maxwell Litsios](mailto:m.l.h.litsios@student.tue.nl), [Mir Yousif](mailto:m.a.yousif@student.tue.nl), 
+and [Pranav Srivastava](mailto:p.srivastava@student.tue.nl)
 
 ## Introduction
 The goal of the assignment was to simulate different queueing systems and compare their performance. The systems we simulated were:
