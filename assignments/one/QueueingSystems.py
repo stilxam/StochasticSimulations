@@ -12,8 +12,6 @@ def single_line(queue: Queue, boat_capacity):
     :return: the queue after the boat has been filled, and the number of people in the boat
     """
     boat = Boat(n=boat_capacity)
-    # boat occupancy
-    boat_occupancy = 0
 
     while boat.filled_seats <= boat_capacity:
         if len(queue) == 0:
@@ -21,11 +19,11 @@ def single_line(queue: Queue, boat_capacity):
         group = queue.head()
         if boat.is_filling_possible(group):
             boat.fill_boat(group)
+            print("")
 
         elif not boat.is_filling_possible(group):
             queue.stack(group)
             break
-    # TODO: RETURN THE NUMBER OF PEOPLE IN THE BOAT
     return queue, boat.filled_seats
 
 
@@ -37,9 +35,6 @@ def two_lines(queue: Queue, boat_capacity):
     :return: Queue after the boat has been filled, and the number of people in the boat
     """
     boat = Boat(n=boat_capacity)
-
-    # boat occupancy
-    boat_occupancy = 0
 
     while boat.filled_seats <= boat_capacity:
         if len(queue) == 0:
@@ -56,7 +51,6 @@ def two_lines(queue: Queue, boat_capacity):
                 boat.fill_boat(single_rider)
             else:
                 break
-    # TODO: RETURN THE NUMBER OF PEOPLE IN THE BOAT
     return queue, boat.filled_seats
 
 def dynamic_queue(queue: Queue, boat_capacity):
@@ -105,7 +99,28 @@ def dynamic_queue(queue: Queue, boat_capacity):
         index = np.where(queue.q == group)[0][0]
         # remove the group from the queue
         queue.q = np.delete(queue.q, index)
-
     
-    #TODO: return the updated queue with the groups that fit in the boat removed
-    return queue, m[size_of_queue, boat_capacity]
+    boat_occupancy = m[size_of_queue, boat_capacity]
+
+    return queue, boat_occupancy
+
+def main():
+    queue = [8,7]
+    boat_capacity = 8
+    expected_queue = [7]
+    expected_boat_occupancy = 5
+
+    test_queue = Queue(1,1,1)
+    test_queue.enqueue(queue)
+    test_queue = np.delete(test_queue, 0)
+
+    test_queue, boat_occupancy = single_line(test_queue, boat_capacity)
+
+    print("")
+
+    assert np.equal(np.array(test_queue), np.array(expected_queue))
+    assert boat_occupancy == expected_boat_occupancy
+
+
+if __name__ == '__main__':
+    main()

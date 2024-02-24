@@ -10,7 +10,7 @@ from tqdm.auto import tqdm
 
 from aux_functions.Queue import Queue
 from evaluation import confidence_interval, matplotlib_plot_results, queue_plot_results
-from QueuingSystems import single_line, two_lines, dynamic_queue
+from QueueingSystems import single_line, two_lines, dynamic_queue
 
 def simulate_boat_line(q_type: str, len_q, max_group_size, min_group_size, boat_capacity, max_time_interval: int, min_queue_size,
                        max_queue_size):
@@ -76,7 +76,6 @@ def simulate_boat_line(q_type: str, len_q, max_group_size, min_group_size, boat_
         elif q_type == "DYNAMIC":
             Q, boat_occupancy = dynamic_queue(Q, boat_capacity)
              
-
         if q_type in ["BASE", "DYNAMIC"]:
             # Calculate the number of people in the queue (i.e. queue length)
             for group in Q.q:
@@ -93,7 +92,8 @@ def simulate_boat_line(q_type: str, len_q, max_group_size, min_group_size, boat_
         boat_occupancy_per_interval[i] = boat_occupancy
 
         # Generate new arrivals for next iteration
-        possible_group_arrivals = list(range(min_queue_size, max_queue_size+1))
+        # possible_group_arrivals = list(range(min_queue_size, max_queue_size+1))
+        possible_group_arrivals= [0,1,2,3]
         probabilities = [0.1,0.2,0.3,0.4]
         len_q = np.random.choice(possible_group_arrivals, p=probabilities)
 
@@ -145,7 +145,7 @@ def simulate_boat_line(q_type: str, len_q, max_group_size, min_group_size, boat_
                 final_total_group_sizes, final_total_groups_arrived)
 
 def stochastic_roller_coaster(
-        n_runs: int = 1000,
+        n_runs: int = 10,
         min_group_size: int = 1,
         max_group_size: int = 5,
         min_queue_size: int = 0,
@@ -175,7 +175,8 @@ def stochastic_roller_coaster(
     t_init = time.time()
 
     # Generate the number of groups arriving at the beginning of the simulation
-    possible_group_arrivals = list(range(min_queue_size, max_queue_size+1))
+    # possible_group_arrivals = list(range(min_queue_size, max_queue_size+1))
+    possible_group_arrivals= [0,1,2,3]
     probabilities = [0.1,0.2,0.3,0.4]
     len_q = np.random.choice(possible_group_arrivals, p=probabilities)
 
