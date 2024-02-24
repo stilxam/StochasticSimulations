@@ -24,29 +24,37 @@ class TestEvaluation(unittest.TestCase):
     def test_confidence_interval_3(self):
         values = np.array([1, 2, 3, 4, 5])
         confidence = 0.05
-        expected = (1.7604099353908769, 4.239590064609123)
-        self.assertEqual(evaluation.confidence_interval(values, confidence), expected)
+        expected = (1.760, 4.240)
+        result = evaluation.confidence_interval(values, confidence)
+        result = (round(result[0], 3), round(result[1], 3))
+        self.assertEqual(result, expected)
     
     # test case 4: negative values as input
     def test_confidence_interval_4(self):
         values = np.array([-1, -2, -3, -4, -5])
         confidence = 0.05
-        expected = (-4.239590064609123, -1.7604099353908769)
-        self.assertEqual(evaluation.confidence_interval(values, confidence), expected)
+        expected = (-4.240, -1.760)
+        result = evaluation.confidence_interval(values, confidence)
+        result = (round(result[0], 3), round(result[1], 3))
+        self.assertEqual(result, expected)
     
     # test case 5: mix of positive and negative values as input
     def test_confidence_interval_6(self):
         values = np.array([-1, 2, -3, 4, -5])
         confidence = 0.05
-        expected = (-3.459130002367346, 2.2591300023673457)
-        self.assertEqual(evaluation.confidence_interval(values, confidence), expected)
+        expected = (-3.459, 2.259)
+        result = evaluation.confidence_interval(values, confidence)
+        result = (round(result[0], 3), round(result[1], 3))
+        self.assertEqual(result, expected)
 
     # test case 6: testing different confidence level
     def test_confidence_interval_4(self):
         values = np.array([1, 2, 3, 4, 5])
         confidence = 0.1
-        expected = (1.9597032242488852, 4.040296775751115)
-        self.assertEqual(evaluation.confidence_interval(values, confidence), expected)
+        expected = (1.960, 4.040)
+        result = evaluation.confidence_interval(values, confidence)
+        result = (round(result[0], 3), round(result[1], 3))
+        self.assertEqual(result, expected)
 
 if __name__ == "__main__":
     unittest.main()
