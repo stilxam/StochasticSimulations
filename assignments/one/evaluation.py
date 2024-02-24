@@ -18,6 +18,7 @@ def confidence_interval(results: np.array, confidence: float = 0.05) -> Tuple[fl
     n: int = len(results)
     z: float = stats.norm.ppf(1 - (confidence) / 2)
     half_width: float = z * (var / n) ** 0.5
+    
     lower: float = mean - half_width
     upper: float = mean + half_width
 
@@ -154,3 +155,15 @@ def queue_plot_results(
         plt.close(fig)
 
     return plt
+
+
+def main():
+    values = np.array([])
+    confidence = 0.05
+
+    exp = confidence_interval(values, confidence)
+    print(exp)
+
+
+if __name__ == "__main__":
+    main()
