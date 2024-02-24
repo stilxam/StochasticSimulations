@@ -1,6 +1,5 @@
 import numpy
 
-
 class Boat:
     def __init__(self, n: int = 8):
         self.n_seats: int = n
