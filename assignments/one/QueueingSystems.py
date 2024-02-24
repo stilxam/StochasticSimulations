@@ -103,24 +103,3 @@ def dynamic_queue(queue: Queue, boat_capacity):
     boat_occupancy = m[size_of_queue, boat_capacity]
 
     return queue, boat_occupancy
-
-def main():
-    queue = [8,7]
-    boat_capacity = 8
-    expected_queue = [7]
-    expected_boat_occupancy = 5
-
-    test_queue = Queue(1,1,1)
-    test_queue.enqueue(queue)
-    test_queue = np.delete(test_queue, 0)
-
-    test_queue, boat_occupancy = single_line(test_queue, boat_capacity)
-
-    print("")
-
-    assert np.equal(np.array(test_queue), np.array(expected_queue))
-    assert boat_occupancy == expected_boat_occupancy
-
-
-if __name__ == '__main__':
-    main()
