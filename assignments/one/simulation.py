@@ -251,6 +251,18 @@ def stochastic_roller_coaster(
         ])
     ) / (n_runs * len(queue_types) * max_time_interval)
 
+
+    print("\nSIZES")
+    combined_sizes = np.concatenate([results["BASE"][:, 5], results["SINGLES"][:, 5], results["DYNAMIC"][:, 5]])
+    sizes_ci: Tuple[float, float] = confidence_interval(combined_sizes)
+
+    print("\nARRIVALS")
+    combined_arrivals = np.concatenate(results["BASE"][:, 6], results["SINGLES"][:, 6], results["DYNAMIC"][:, 6])
+    size_ci: Tuple[float, float] = confidence_interval(combined_arrivals)
+
+
+
+
     print(f"\nMean number of groups arriving per time slot: {final_arrivals_mean_group_arrivals}")
     print(f"Mean group size: {final_arrivals_total_group_size}")
 
