@@ -63,7 +63,6 @@ def simulate_boat_line(q_type: str, len_q, max_group_s, min_group_s, boat_capaci
     final_total_group_sizes_sum += sum(Q.q)
     final_total_number_of_groups_arrived += len(Q.q)
 
-
     # Time interval iterator.
     i = 0
     # Number of boats to be simulated
@@ -142,10 +141,10 @@ def simulate_boat_line(q_type: str, len_q, max_group_s, min_group_s, boat_capaci
                 final_total_group_sizes_sum, final_total_number_of_groups_arrived)
 
 def stochastic_roller_coaster(
-        n_runs: int = 1000,
+        n_runs: int = 100,
         max_group_s: int = 5,
         min_group_s: int = 1,
-        max_queue_size: int = 2,
+        max_queue_size: int = 3,
         min_queue_size: int = 1,
         boat_capacity = 8,
         max_time_interval: int = 1000,
@@ -166,14 +165,15 @@ def stochastic_roller_coaster(
 
     t_init = time.time()
 
-    # possible_group_arrivals = [0,1,2,3]
-    # probabilities = [0.1,0.2,0.3,0.4] # simulation 1 - benchmark
+    possible_group_arrivals = [0,1,2,3]
+    probabilities = [0.1,0.2,0.3,0.4] # simulation 1 - benchmark
     # probabilities = [0.2,0.6,0.1,0.1] #  simulation 2  - low number of groups per time interval
     # probabilities = [0.1,0.1,0.2,0.6] #  simulation 3  - high number of groups per time interval
 
-    possible_group_arrivals = [1,2]
-    probabilities = [0.5,0.5] #  simulation 4  - higher probabilities of smaller groups arrrving per time interval
+    # possible_group_arrivals = [1,2]
+    # probabilities = [0.5,0.5] #  simulation 4  - higher probabilities of smaller groups arrrving per time interval
     # probabilities = [0.5,0.5] #  simulation 5  - higher probabilities of smaller groups arrrving per time interval
+
     len_q = np.random.choice(possible_group_arrivals, p=probabilities)
 
 
@@ -233,38 +233,28 @@ def stochastic_roller_coaster(
     ).show()
     t_term = time.time()
 
-    # calculate the mean size of the groups arriving at each time interval for all queue types combined
-    final_arrivals_total_group_size = np.sum(
-        np.concatenate([
-            results["BASE"][:, 5], 
-            results["SINGLES"][:, 5], 
-            results["DYNAMIC"][:, 5]
-        ])
-    ) / (n_runs * len(queue_types) * max_time_interval)
 
-    # calculate the mean number of groups arriving at each time interval for all queue types combined
-    final_arrivals_mean_group_arrivals = np.sum(
-        np.concatenate([
-            results["BASE"][:, 6], 
-            results["SINGLES"][:, 6], 
-            results["DYNAMIC"][:, 6]
-        ])
-    ) / (n_runs * len(queue_types) * max_time_interval)
+    # only for sim 1
+    # # calculate the mean size of the groups arriving at each time interval for all queue types combined
+    # final_arrivals_total_group_size = np.sum(
+    #     np.concatenate([
+    #         results["BASE"][:, 5], 
+    #         results["SINGLES"][:, 5], 
+    #         results["DYNAMIC"][:, 5]
+    #     ])
+    # ) / (n_runs * len(queue_types) * max_time_interval)
 
+    # # calculate the mean number of groups arriving at each time interval for all queue types combined
+    # final_arrivals_mean_group_arrivals = np.sum(
+    #     np.concatenate([
+    #         results["BASE"][:, 6], 
+    #         results["SINGLES"][:, 6], 
+    #         results["DYNAMIC"][:, 6]
+    #     ])
+    # ) / (n_runs * len(queue_types) * max_time_interval)
 
-    print("\nSIZES")
-    combined_sizes = np.concatenate([results["BASE"][:, 5], results["SINGLES"][:, 5], results["DYNAMIC"][:, 5]])
-    sizes_ci: Tuple[float, float] = confidence_interval(combined_sizes)
-
-    print("\nARRIVALS")
-    combined_arrivals = np.concatenate(results["BASE"][:, 6], results["SINGLES"][:, 6], results["DYNAMIC"][:, 6])
-    size_ci: Tuple[float, float] = confidence_interval(combined_arrivals)
-
-
-
-
-    print(f"\nMean number of groups arriving per time slot: {final_arrivals_mean_group_arrivals}")
-    print(f"Mean group size: {final_arrivals_total_group_size}")
+    # print(f"\nMean number of groups arriving per time slot: {final_arrivals_mean_group_arrivals}")
+    # print(f"Mean group size: {final_arrivals_total_group_size}")
 
     print(f"\nALL SIMULATIONS TOOK  {round(t_term - t_init, 2)} SECONDS")
 

@@ -17,16 +17,17 @@ class Queue:
         if high == low:
             self.q = high * np.ones(length)
         else:
-            group_sizes = np.arange(low, high + 1)
+            # group_sizes = np.arange(low, high + 1)
             # probabilities = [0.5,0.2,0.1,0.1,0.1] # simulation 4 - higher probabilities of smaller groups arrrving per time interval
-            probabilities = [0.1,0.1,0.1,0.2,0.5] # simulation 4 - higher probabilities of smaller groups arrrving per time interval
-            self.q = []
-            for i in range(length):
-                self.q.append(np.random.choice(group_sizes, p=probabilities))
+            # probabilities = [0.1,0.1,0.1,0.2,0.5] # simulation 5 - higher probabilities of bigger groups arrrving per time interval
+            # self.q = []
+            # for i in range(length):
+            #     self.q.append(np.random.choice(group_sizes, p=probabilities))
             
-            self.q = np.array(self.q)
+            # self.q = np.array(self.q)
 
-            # self.q = np.random.randint(high=high+1, low=low, size=length)
+            # simulation 1,2,3
+            self.q = np.random.randint(high=high+1, low=low, size=length)
 
     def __len__(self):
         """
