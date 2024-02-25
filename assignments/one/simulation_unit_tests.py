@@ -8,7 +8,7 @@ class TestSimulation(unittest.TestCase):
         # Test case 1: BASE queue type
         q_type = "BASE"
         len_q = 5
-        max_group_size = 4
+        max_group_size = 5
         min_group_size = 1
         boat_capacity = 10
         max_time_interval = 5
@@ -31,7 +31,7 @@ class TestSimulation(unittest.TestCase):
         # Test case 2: SINGLES queue type
         q_type = "SINGLES"
         len_q = 5
-        max_group_size = 4
+        max_group_size = 5
         min_group_size = 1
         boat_capacity = 10
         max_time_interval = 5
@@ -54,7 +54,7 @@ class TestSimulation(unittest.TestCase):
         # Test case 3: DYNAMIC queue type
         q_type = "DYNAMIC"
         len_q = 5
-        max_group_size = 4
+        max_group_size = 5
         min_group_size = 1
         boat_capacity = 10
         max_time_interval = 5
