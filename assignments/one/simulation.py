@@ -67,6 +67,8 @@ def simulate_boat_line(q_type: str, len_q, max_group_size, min_group_size, boat_
 
     # Time interval iterator.
     i = 0
+    # Number of boats to be simulated
+    number_of_boats = max_time_interval
 
     while max_time_interval > 0:
         if q_type == "BASE":
@@ -100,10 +102,11 @@ def simulate_boat_line(q_type: str, len_q, max_group_size, min_group_size, boat_
         new_arrival = Queue(length=len_q, high=max_group_size, low=min_group_size)
 
         # store the group size and the number of groups of the arrivals
-        if (i+1) < max_time_interval:
+        if (i+1) < number_of_boats:
             for group in new_arrival.q:
                 total_group_size[i+1] += group
                 group_arrivals[i+1] += 1
+                print("")
 
         # Enqueue the new arrivals (i.e. add them to the end of the queue)
         Q.enqueue(new_arrival.q)
@@ -117,6 +120,8 @@ def simulate_boat_line(q_type: str, len_q, max_group_size, min_group_size, boat_
 
     # Calculate the total number of groups that arrived at the end of the simulation.
     final_total_groups_arrived = np.sum(group_arrivals)
+
+    print("")
 
     if q_type == "SINGLES":
         # Calculate the mean queue length of the singles queue.
@@ -145,7 +150,7 @@ def simulate_boat_line(q_type: str, len_q, max_group_size, min_group_size, boat_
                 final_total_group_sizes, final_total_groups_arrived)
 
 def stochastic_roller_coaster(
-        n_runs: int = 10,
+        n_runs: int = 10000,
         min_group_size: int = 1,
         max_group_size: int = 5,
         min_queue_size: int = 0,
@@ -169,7 +174,7 @@ def stochastic_roller_coaster(
     
     :return: a dictionary where the keys are queue types and the values are arrays with the simulation results
     """
-    queue_types = ["BASE", "SINGLES", "DYNAMIC"]
+    queue_types = ["BASE","SINGLES", "DYNAMIC"]
     results = {}
 
     t_init = time.time()
