@@ -5,6 +5,8 @@ import threading
 from Event import Event
 from Queue import Queue
 from Dispatcher import Dispatcher
+import heapq
+from FES import FES
 
 
 class Simulation:
@@ -15,7 +17,7 @@ class Simulation:
         self.arrDist = stats.expon(scale = 1 / self.lam)
         self.theta = theta
         self.T = max_time
-        self.S = np.zeros(self.num_servers)
+        self.fes = FES()
     
     def simulate(self):
         t = 0   # current time
@@ -28,43 +30,57 @@ class Simulation:
         # initialize the dispatcher
         dispatcher = Dispatcher(self.theta, self.num_servers)
 
+        
         # generate the first arrival
         a = self.arrDist.rvs()
-        firstEvent = Event(Event.ARRIVAL, a)
-
-        # accept or reject the arrival
-        server, status = dispatcher.dispatcher()
-        if status == "accepted":
-           # add the event to the queue[server]
-            queues[server].add_event(firstEvent)
-            # serve the event
-            # queues[server].simulate()
-            queues[server].serve()
+        # we set the server_id to -1 to indicate that the event is not assigned to any server
+        firstEvent = Event(Event.ARRIVAL, a, -1)
         
-        t += a
+        # add the first event to the FES
+        self.fes.add(firstEvent)
 
         while t < self.T:
-            a = self.arrDist.rvs()
-            arr = Event(Event.ARRIVAL, t + a)
-            # accpet or reject the arrival
-            server, status = dispatcher.dispatcher()
-            if status == "accepted":
-            # add the event to the queue[status]
-                queues[server].add_event(arr)
-                # serve the event
-            # queues[server].simulate()
-            queues[server].serve()
+            tOld = t
+            event = self.fes.next()
+            t = event.time
 
-            t += a
-    
-        # calculate the area for all queues
+            # update the surface below the queue length graph for all queues
+            for i in range (self.num_servers):
+                queues[i].S += (t - tOld) * queues[i].num_customers
+            
+            if event.type == Event.ARRIVAL:
+
+                # accept or reject the arrival
+                server_id, status = dispatcher.dispatcher()
+
+                if status == "accepted":
+                    queues[server_id].num_customers += 1
+
+                    # check if the server is idle
+                    if queues[server_id].num_customers == 1:
+                        dep = Event(Event.DEPARTURE, t + queues[server_id].servDist.rvs(), server_id)
+                        self.fes.add(dep)
+                
+                a = self.arrDist.rvs()
+                arr = Event(Event.ARRIVAL, t + a, -1)
+                self.fes.add(arr)
+            
+            elif event.type == Event.DEPARTURE:
+                # retrieve the server_id from the event
+                server_id = event.server_id
+                queues[server_id].num_customers -= 1
+                
+                # check if there are customes waiting for the server
+                if queues[server_id].num_customers > 0:
+                    dep = Event(Event.DEPARTURE, t + queues[server_id].servDist.rvs(), server_id)
+                    self.fes.add(dep)
+            
+        
+        # print the surface below the queue length graph for all queues
         for i in range (self.num_servers):
-            self.S[i] = queues[i].return_area()
-            # self.S[i] = queues[i].average_area()
-
-        print (self.S)
+            print (queues[i].S / t)
 
 if __name__ == "__main__":
     np.random.seed(123)
-    sim = Simulation (2, [3,4], 2, 0.4, 100)
+    sim = Simulation (2, [3,4], 2, 0.4, 10000)
     sim.simulate()
