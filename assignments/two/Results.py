@@ -6,26 +6,18 @@ import multiprocessing as mp
 from joblib import delayed, Parallel
 from functools import partial
 import time
+import math
 
-def confidence_interval(results: np.array, confidence: float = 0.05) -> Tuple[float, float]:
-    """
-    This function will calculate the confidence interval of the results.
-    :param results: the results of the simulations
-    :param confidence: the confidence level
-    :return: None
-    """
-    mean: float = results.mean()
-    var: float = results.var()
-    n: int = len(results)
-    z: float = stats.norm.ppf(1 - (confidence) / 2)
-    half_width: float = z * (var / n) ** 0.5
-    
-    lower: float = mean - half_width
-    upper: float = mean + half_width
 
-    print(f"MEAN: {mean} \nVAR: {var}\nSTD {var ** 0.5}\nN: {n}\nZ: {z}\nHalf Width: {half_width}")
-    print(f"CI: [{lower}, {upper}]")
-    return lower, upper
+def confidence_interval(results, confidence = 0.95):
+    results = np.array(results)
+    mean = results.mean(axis = 0)
+    std_dev = results.std(axis = 0, ddof = 1)
+
+    low = mean - (1.96 * (std_dev / np.sqrt(len(results))))
+    high = mean + (1.96 * (std_dev / np.sqrt(len(results))))
+
+    return low, high
 
 def main():
     np.random.seed(42069)
@@ -40,34 +32,27 @@ def main():
     t1 = time.time()
 
     # results = []
-# 
 
-    # sim = Simulation (lambda_param, mus, m, thetas[0], 1000)
-    # results = Parallel(n_jobs=n_jobs)(delayed(sim.simulate)() for _ in range(its))
+    for theta in thetas:
+
+        sim = Simulation (lambda_param, mus, m, theta, 1000)
+        results = Parallel(n_jobs=n_jobs)(delayed(sim.simulate)() for _ in range(its))
 
 
+        results = np.array(results)
+        mean = results.mean(axis = 0)
+        
+        #calculate CI
+        low_bound, high_bound = confidence_interval(results = results)
 
-    
-    sim = Simulation (lambda_param, mus, m, thetas[0], 1000)
-    results = np.empty((its,m))
-    for i in range (its):
-        results[i] = (sim.simulate())
+        print(f"--------------Simulation results (theta = {theta})--------------")
+        for i in range(m):
+            print(f"Queue {i+1} has Sample mean of the long-term average number of customers: {mean[i]} with CI: [{low_bound[i]}, {high_bound[i]}]")
 
+        
     t2 = time.time()    
-
-
     print(f"time: {t2-t1}")
 
-    # for theta_param in thetas:
-    #     sim = Simulation (lambda_param, mus, m, theta_param, 10000)
-    #     results = sim.simulate()
-    
-    # print (results)
-    
-    # for i in range(5):
-    #     # calculate the CI for this queue
-    #     CI = confidence_interval(np.array(area_histories[i]), confidence = confidence_val)
-    #     print(f"Queue {i+1} has Sample mean of the long-term average number of customers: {results[i]} with CI: {CI}")
 
 
 if __name__ == "__main__":
