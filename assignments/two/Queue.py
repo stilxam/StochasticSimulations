@@ -31,8 +31,14 @@ class Queue:
         # status of the server (busy or not)
         self.status = Queue.Idle
 
+        # stores the aread of this queue after each iteration
+        self.area_history = []
+
         # current number of customers
         self.num_customers = 0
+    
+    def add_area_to_history(self):
+        self.area_history.append(self.S)
 
     def return_values(self):
         return self.num_customers, self.status, self.t, self.S

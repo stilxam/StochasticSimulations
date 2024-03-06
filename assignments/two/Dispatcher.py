@@ -2,6 +2,7 @@ import scipy
 from scipy import stats
 from Event import Event
 import numpy
+import numpy as np
 
 class Dispatcher:
 
@@ -17,7 +18,10 @@ class Dispatcher:
         # if scipy.stats.bernoulli.rvs(self.theta):
         if choice == "accept":
             # accept the arrival by randomly selecting one of the m servers
-            server = scipy.stats.randint.rvs(0, self.num_servers)
+            # server = scipy.stats.randint.rvs(0, self.num_servers)
+            # server = np.random.uniform(0, self.num_servers)
+            queue_probabilities = [1 / self.num_servers] * self.num_servers
+            server = np.random.choice(range(self.num_servers), p = queue_probabilities)
             return server , "accepted"
         else:
             # reject the arrival
