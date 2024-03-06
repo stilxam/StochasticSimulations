@@ -120,32 +120,3 @@ class Simulation:
         for _ in range(nr_runs):
             sim_results.append(self.simulate())
         return np.array(sim_results)
-
-    def calculate_CI(self, sim_results):
-        sample_means = np.mean(sim_results, axis = 0)
-        
-        sample_stds = np.std(sim_results, axis = 0, ddof = 1)
-        
-        return  sample_means - (1.96 * (sample_stds / np.sqrt(len(sim_results)))), sample_means + (1.96 * (sample_stds / np.sqrt(len(sim_results))))
-
-def main():
-    mus = [4, 5, 6, 7, 8]
-    lam = 3
-    thetas = [0.60, 0.85]
-    m = 5
-    total_time = 1000
-    np.random.seed(12345)
-    results_queues = [[] for _ in range(len(mus))]
-    for theta in thetas:
-        simulation = Simulation(lam, mus, m, theta, total_time)
-        results = simulation.perform_multiple_runs(1000)
-        print(f'----- Results for theta = {theta} -----')
-        for i in range(len(mus)):
-            print(f"Sample mean of long term average number of customers for queue {i + 1} = {np.mean(results, axis = 0)[i]}")
-        print('')
-        print(f'----- Confidence Intervals for theta = {theta} -----')
-        print(simulation.calculate_CI(results))
-        print('')
-
-if __name__ == "__main__":
-    main()
