@@ -18,6 +18,8 @@ class Simulation:
         self.theta = theta
         self.T = max_time
         self.fes = FES()
+        self.status_for_test = []
+        self.queues_for_test = []
     
     def simulate(self):
         t = 0   # current time
@@ -56,9 +58,15 @@ class Simulation:
 
                 # accept or reject the arrival
                 server_id, status = dispatcher.dispatcher()
+                
+                # Data tracking for test purposes
+                self.status_for_test.append(status)
 
                 if status == "accepted":
                     queues[server_id].num_customers += 1
+                    
+                    # Data tracking for test purposes
+                    self.queues_for_test.append(queues[server_id.num_customers])
 
                     # check if the server is idle
                     if queues[server_id].num_customers == 1:
@@ -73,6 +81,8 @@ class Simulation:
                 # retrieve the server_id from the event
                 server_id = event.server_id
                 queues[server_id].num_customers -= 1
+                
+                self.queues_for_test.append(queues[server_id.num_customers])
                 
                 # check if there are customes waiting for the server
                 if queues[server_id].num_customers > 0:

@@ -9,7 +9,19 @@ class FES:
         heapq.heappush(self.events, event)
         
     def next(self):
-        return heapq.heappop(self.events)
+        if self.events:
+            return heapq.heappop(self.events)
+        else:
+            raise StopIteration
+    
+    def __iter__(self):
+        return self
+    
+    def __next__(self):
+        if self.events:
+            return self.next()
+        else:
+            raise StopIteration
     
     def isEmpty(self):
         return len(self.events) == 0
