@@ -1,98 +1,151 @@
 import numpy as np
-from scipy import stats
-import time
-import threading
-from Event import Event
-from Queue import Queue
-from Dispatcher import Dispatcher
+import scipy 
 import heapq
-from FES import FES
 
+class Event:
+    ARRIVAL = 0 # constant for arrival type
+    DEPARTURE = -1 # constant for departure type
+
+    def __init__(self, typ, time, id):
+        self.type = typ
+        self.time = time
+        self.server_id = id
+    
+    def __lt__(self, other):
+        return self.time < other.time
+    
+    def __repr__(self):
+        s = ("Arrival", "Departure")
+        return f"{s[self.type]} at {self.time} at server {self.server_id}"
+    
+
+class FES:
+    
+    def __init__(self):
+        self.events = []
+        
+    def add(self, event):
+        heapq.heappush(self.events, event)
+        
+    def next(self):
+        return heapq.heappop(self.events)
+    
+    def isEmpty(self):
+        return len(self.events) == 0
+        
+    def __repr__(self):
+        # Note that if you print self.events, it would not appear to be sorted
+        # (although they are sorted internally).
+        # For this reason we use the function 'sorted'
+        s = ''
+        sortedEvents = sorted(self.events)
+        for e in sortedEvents :
+            s += f'{e}\n'
+        return s
+
+class Queue:
+
+    IDLE = 0
+    BUSY = 1
+
+    def __init__(self, departure_rate: float):
+        self.mu = departure_rate
+        self.servDist = scipy.stats.expon(scale = 1 / self.mu)
+        self.number_of_customers = 0
+        self.S = 0
+        self.status = self.IDLE
+    
+    def arrival(self):
+        self.number_of_customers +=1
+        # update the status of the server
+        if self.number_of_customers > 1:
+            self.status = self.BUSY
+    
+    def departure(self):
+        self.number_of_customers -= 1
+        self.status = self.IDLE
 
 class Simulation:
-    def __init__(self, arrival_rate: float, departure_rate: list, num_servers: int, theta: float, max_time: int):
+    def __init__(self, arrival_rate: float, departure_rates: list, m, theta, Max_Time):
         self.lam = arrival_rate
-        self.mu = departure_rate
-        self.num_servers = num_servers
-        self.arrDist = stats.expon(scale = 1 / self.lam)
+        self.mus = departure_rates
         self.theta = theta
-        self.T = max_time
+        self.m = m
+        self.T = Max_Time
+        self.arrDist = scipy.stats.expon(scale = 1 / self.lam)
+        self.queues = [Queue(mu) for mu in self.mus]
+        self.results = np.zeros(self.m)
+        self.probabilities_q = np.ones(self.m) * (1 / self.m )
         self.fes = FES()
+        self.time = 0
+        self.tOld = 0
     
     def simulate(self):
-        t = 0   # current time
+        self.fes.add(Event(Event.ARRIVAL, self.arrDist.rvs(), -1))
 
-        # create queues
-        queues = []
-        for i in range (self.num_servers):
-            queues.append(Queue(self.mu[i]))
-
-        # initialize the dispatcher
-        dispatcher = Dispatcher(self.theta, self.num_servers)
-
-        
-        # generate the first arrival
-        a = self.arrDist.rvs()
-        # we set the server_id to -1 to indicate that the event is not assigned to any server
-        firstEvent = Event(Event.ARRIVAL, a, -1)
-        
-        # add the first event to the FES
-        self.fes.add(firstEvent)
-
-        while t < self.T:
-            tOld = t
+        while self.time < self.T:
+            self.tOld = self.time
             event = self.fes.next()
-            t = event.time
+            self.time = event.time
 
-            # update the surface below the queue length graph for all queues
-            for i in range (self.num_servers):
-                if (queues[i].num_customers == 0 ):
-                    queues[i].S += (t - tOld) * queues[i].num_customers
-                    queues[i].add_area_to_history()
-
-                elif (queues[i].num_customers > 0):
-                    queues[i].S += (t - tOld) * (queues[i].num_customers - 1)
-                    queues[i].add_area_to_history()
-
+            for i in range(self.m):
+                if self.queues[i].number_of_customers > 0:
+                    self.queues[i].S += (self.time - self.tOld) * (self.queues[i].number_of_customers - 1)
             
             if event.type == Event.ARRIVAL:
-
-                # accept or reject the arrival
-                server_id, status = dispatcher.dispatcher()
-
+                status = np.random.choice(['accepted', 'rejected'], p = [self.theta, 1 - self.theta])
+            
                 if status == "accepted":
-                    queues[server_id].num_customers += 1
-
-                    # check if the server is idle
-                    if queues[server_id].num_customers == 1:
-                        dep = Event(Event.DEPARTURE, t + queues[server_id].servDist.rvs(), server_id)
-                        self.fes.add(dep)
+                    server_id = np.random.choice(range(self.m), p = self.probabilities_q)
+                    self.queues[server_id].arrival()
+                    # check if the server was idle prior to the current arrival
+                    if self.queues[server_id].status == Queue.IDLE:
+                        self.fes.add(Event(Event.DEPARTURE, self.time + self.queues[server_id].servDist.rvs(), server_id))
                 
-                a = self.arrDist.rvs()
-                arr = Event(Event.ARRIVAL, t + a, -1)
-                self.fes.add(arr)
+                self.fes.add(Event(Event.ARRIVAL, self.time + self.arrDist.rvs(), -1))
             
-            elif event.type == Event.DEPARTURE:
-                # retrieve the server_id from the event
-                server_id = event.server_id
-                queues[server_id].num_customers -= 1
-                
-                # check if there are customes waiting for the server
-                if queues[server_id].num_customers > 0:
-                    dep = Event(Event.DEPARTURE, t + queues[server_id].servDist.rvs(), server_id)
-                    self.fes.add(dep)
+            else: 
+                self.queues[event.server_id].departure()
+                if self.queues[event.server_id].number_of_customers > 0:
+                    self.fes.add(Event(Event.DEPARTURE, self.time + self.queues[event.server_id].servDist.rvs(), event.server_id))
             
-        results = []
-        area_histories = []
-        # print the surface below the queue length graph for all queues
-        for i in range (self.num_servers):
-            results.append(queues[i].S / t)
-            area_histories.append(queues[i].area_history)
-
+        for i in range (self.m):
+            self.results[i] = self.queues[i].S / self.time
         
-        return results # area_histories
+        return self.results
+
+                    
+    def perform_multiple_runs(self, nr_runs):
+        sim_results = []
+        for _ in range(nr_runs):
+            sim_results.append(self.simulate())
+        return np.array(sim_results)
+
+    def calculate_CI(self, sim_results):
+        sample_means = np.mean(sim_results, axis = 0)
+        
+        sample_stds = np.std(sim_results, axis = 0, ddof = 1)
+        
+        return  sample_means - (1.96 * (sample_stds / np.sqrt(len(sim_results)))), sample_means + (1.96 * (sample_stds / np.sqrt(len(sim_results))))
+
+def main():
+    mus = [4, 5, 6, 7, 8]
+    lam = 3
+    thetas = [0.60, 0.85]
+    m = 5
+    total_time = 1000
+    np.random.seed(12345)
+    results_queues = [[] for _ in range(len(mus))]
+    for theta in thetas:
+        simulation = Simulation(lam, mus, m, theta, total_time)
+        results = simulation.perform_multiple_runs(1000)
+        print(f'----- Results for theta = {theta} -----')
+        for i in range(len(mus)):
+            print(f"Sample mean of long term average number of customers for queue {i + 1} = {np.mean(results, axis = 0)[i]}")
+        print('')
+        print(f'----- Confidence Intervals for theta = {theta} -----')
+        print(simulation.calculate_CI(results))
+        print('')
 
 if __name__ == "__main__":
-    np.random.seed(None)
-    sim = Simulation (2, [3,4], 2, 0.4, 10000)
-    sim.simulate()
+    main()
