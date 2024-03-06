@@ -7,6 +7,8 @@ from Event import Event
 from scipy import stats
 from FES import FES
 
+import numpy
+
 
 class Queue:
 
@@ -20,6 +22,7 @@ class Queue:
         # departure rate mu
         self.mu = departure_rate
         # Service distribution
+        # self.servDist = numpy.random.exponential(scale = 1 / self.mu)
         self.servDist = stats.expon(scale = 1 / self.mu)
         
         # surface below queue length graph

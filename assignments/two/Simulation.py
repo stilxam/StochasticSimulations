@@ -46,7 +46,11 @@ class Simulation:
 
             # update the surface below the queue length graph for all queues
             for i in range (self.num_servers):
-                queues[i].S += (t - tOld) * queues[i].num_customers
+                if (queues[i].num_customers == 0 ):
+                    queues[i].S += (t - tOld) * queues[i].num_customers
+                elif (queues[i].num_customers > 0):
+                    queues[i].S += (t - tOld) * (queues[i].num_customers - 1)
+
             
             if event.type == Event.ARRIVAL:
 
@@ -81,6 +85,6 @@ class Simulation:
             print (queues[i].S / t)
 
 if __name__ == "__main__":
-    np.random.seed(123)
+    np.random.seed(None)
     sim = Simulation (2, [3,4], 2, 0.4, 10000)
     sim.simulate()
