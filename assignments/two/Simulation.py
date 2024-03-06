@@ -10,7 +10,7 @@ from FES import FES
 
 
 class Simulation:
-    def __init__(self, arrival_rate: int, departure_rate: list, num_servers: int, theta: int, max_time: int):
+    def __init__(self, arrival_rate: float, departure_rate: list, num_servers: int, theta: float, max_time: int):
         self.lam = arrival_rate
         self.mu = departure_rate
         self.num_servers = num_servers
@@ -48,8 +48,11 @@ class Simulation:
             for i in range (self.num_servers):
                 if (queues[i].num_customers == 0 ):
                     queues[i].S += (t - tOld) * queues[i].num_customers
+                    queues[i].add_area_to_history()
+
                 elif (queues[i].num_customers > 0):
                     queues[i].S += (t - tOld) * (queues[i].num_customers - 1)
+                    queues[i].add_area_to_history()
 
             
             if event.type == Event.ARRIVAL:
@@ -79,10 +82,15 @@ class Simulation:
                     dep = Event(Event.DEPARTURE, t + queues[server_id].servDist.rvs(), server_id)
                     self.fes.add(dep)
             
-        
+        results = []
+        area_histories = []
         # print the surface below the queue length graph for all queues
         for i in range (self.num_servers):
-            print (queues[i].S / t)
+            results.append(queues[i].S / t)
+            area_histories.append(queues[i].area_history)
+
+        
+        return results # area_histories
 
 if __name__ == "__main__":
     np.random.seed(None)
