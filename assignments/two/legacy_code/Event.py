@@ -1,4 +1,12 @@
 class Event:
+    """
+    Purpose: Represents an event in the simulation, either an arrival or a departure.
+    Attributes: Type of event (ARRIVAL or DEPARTURE), time of event, and server ID.
+    Methods:
+    __init__: Initializes the event with given parameters.
+    __lt__: Defines the less-than operation for sorting events by time.
+    __repr__: Returns a string representation of the event
+    """
     ARRIVAL = 0 # constant for arrival type
     DEPARTURE = -1 # constant for departure type
 

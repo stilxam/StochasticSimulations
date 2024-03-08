@@ -23,7 +23,7 @@ class Queue:
         self.mu = departure_rate
         # Service distribution
         # self.servDist = numpy.random.exponential(scale = 1 / self.mu)
-        self.servDist = stats.expon(scale = 1 / self.mu)
+        self.servDist = stats.expon(scale=1 / self.mu)
         
         # surface below queue length graph
         self.S = 0
@@ -31,7 +31,7 @@ class Queue:
         # status of the server (busy or not)
         self.status = Queue.Idle
 
-        # stores the aread of this queue after each iteration
+        # stores the area of this queue after each iteration
         self.area_history = []
 
         # current number of customers

@@ -12,23 +12,21 @@ class SARSA():
         self.num_states: int = num_states
         self.num_actions: int = num_actions
 
-        self.Q = np.full((num_states, num_actions), -np.infty)  #state action
+        self.Q = np.full((num_states, num_actions+1), -np.infty)  #TODO: I DONT KNOW WHAT STRUCTURE TO GIVE THIS
 
     def choose_action(self, state):
         if np.random.uniform(0, 1) < self.epsilon:
-            return np.random.choice(self.num_actions)
+            return np.random.choice(self.num_actions+1)
         else:
-            return np.argmax(self.Q[state])
+            return np.argmax(self.Q[state]) # STRUCTURE WILL HAVE IMPACT HERE
 
     def update(self, state: int, action: int, reward: float, next_state: int):
         """Update the Q-value for the given state-action pair."""
         old_value = self.Q[state, action]
-        next_max = np.max(self.Q[next_state])
+        next_max = np.max(self.Q[next_state]) # STRUCTURE WILL HAVE IMPACT HERE
 
         # SARSA update rule
         new_value = (1 - self.lr) * (old_value) + self.lr *(reward + self.alpha * next_max)
         self.Q[state, action] = new_value
 
-    def learn(self):
-        #TODO IMPLEMENT LEARNING
-        pass
+

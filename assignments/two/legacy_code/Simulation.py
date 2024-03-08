@@ -10,6 +10,14 @@ from assignments.two.legacy_code.FES import FES
 
 
 class Simulation:
+    """
+    Purpose: Represents a queueing system simulation.
+    Attributes: Arrival rate (lam), departure rates (mu), number of servers (num_servers), theta (probability of accepting arrivals), maximum time (T), and an instance of FES (Finite Event System).
+    Methods:
+    __init__: Initializes the simulation with given parameters.
+    simulate: Executes the simulation, returns the results.
+
+    """
     def __init__(self, arrival_rate: float, departure_rate: list, num_servers: int, theta: float, max_time: int):
         self.lam = arrival_rate
         self.mu = departure_rate

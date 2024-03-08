@@ -1,7 +1,16 @@
 import heapq
 
 class FES:
-    
+    """
+    Purpose: Manages the events in the simulation.
+    Attributes: A list of events.
+    Methods:
+    add: Adds an event to the list.
+    next: Returns and removes the next event from the list.
+    __iter__ and __next__: Implements iterator protocol for the class.
+    isEmpty: Checks if there are no events left.
+    __repr__: Returns a string representation of the events
+    """
     def __init__(self):
         self.events = []
         

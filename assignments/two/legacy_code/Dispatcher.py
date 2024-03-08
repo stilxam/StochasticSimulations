@@ -5,7 +5,13 @@ import numpy
 import numpy as np
 
 class Dispatcher:
-
+    """
+    Purpose: Decides whether to accept or reject an arrival based on theta.
+    Attributes: Number of servers (num_servers), and theta.
+    Methods:
+    __init__: Initializes the dispatcher with given parameters.
+    dispatcher: Returns the server ID and status (accepted or rejected) based on theta.
+    """
     def __init__(self, theta, num_servers: int):
         self.num_servers = num_servers
         self.theta = theta
