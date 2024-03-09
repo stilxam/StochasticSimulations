@@ -123,6 +123,14 @@ class Simulation:
 
         # add the first event to the FES
         self.fes.add(firstEvent)
+        
+        # Pass the current state to the dispatcher to choose an action
+        state = self.get_state(queues)
+        action = np.random.choice(num_actions+1)
+
+        # Set the first state-action pair to 0
+        dispatcher.Q[state, action] = 0
+        
         while t < self.T:
             tOld = t
             event = self.fes.next()
@@ -138,16 +146,18 @@ class Simulation:
                     queues[i].S += (t - tOld) * (queues[i].num_customers - 1)
                     queues[i].add_area_to_history()
 
-            # Pass the current state to the dispatcher to choose an action
-            state = self.get_state(queues)
-            action = dispatcher.choose_action(state)
-
-            # Apply the action and observe the reward
+            # Apply the action and observe the next state and reward
             queues, reward = self.apply_action_and_get_reward(gamma, action, queues)
+            
+            # Pass this new state to the dispatcher to choose an action
+            next_state = self.get_state(queues)
+            next_action = dispatcher.choose_action(next_state)
+            
+            if dispatcher.Q[next_state, next_action] == -np.infty:
+                dispatcher.Q[next_state, next_action] = 0
 
             # Update the Q-value based on the observed reward
-            next_state = self.get_state(queues)
-            dispatcher.update(state, action, reward, next_state)
+            dispatcher.update(state, action, reward, next_state, next_action)
 
             # Generate the next event
             a = self.arrDist.rvs()

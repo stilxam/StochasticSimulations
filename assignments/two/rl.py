@@ -20,13 +20,15 @@ class SARSA():
         else:
             return np.argmax(self.Q[state]) # STRUCTURE WILL HAVE IMPACT HERE
 
-    def update(self, state: int, action: int, reward: float, next_state: int):
+    def update(self, state: int, action: int, reward: float, next_state: int, next_action: int):
         """Update the Q-value for the given state-action pair."""
-        old_value = self.Q[state, action]
-        next_max = np.max(self.Q[next_state]) # STRUCTURE WILL HAVE IMPACT HERE
+        update_value = self.Q[state, action]
+        new_value = self.Q[next_state, next_action]
+        # next_max = np.max(self.Q[next_state]) # STRUCTURE WILL HAVE IMPACT HERE
 
         # SARSA update rule
-        new_value = (1 - self.lr) * (old_value) + self.lr *(reward + self.alpha * next_max)
-        self.Q[state, action] = new_value
+        update_value = (1 - self.lr) * (update_value) + self.lr * (reward + self.alpha * new_value)
+        # new_value = (1 - self.lr) * (old_value) + self.lr *(reward + self.alpha * next_max)
+        self.Q[state, action] = update_value
 
 
