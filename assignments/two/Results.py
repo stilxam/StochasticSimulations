@@ -1,20 +1,9 @@
-from Simulation import Simulation
+from filewithclasses import Simulation
 import numpy as np
-from typing import Tuple
-from scipy import stats
-import multiprocessing as mp
-from joblib import delayed, Parallel
-from functools import partial
 import time
-import math
 
 
-def confidence_interval(results):
-    """
-    Calculates 0.95 CI
-    :param results:
-    :return:
-    """
+def confidence_interval(results, confidence=0.95):
     results = np.array(results)
     mean = results.mean(axis=0)
     std_dev = results.std(axis=0, ddof=1)
@@ -26,39 +15,37 @@ def confidence_interval(results):
 
 
 def main():
-    """
-    Purpose: Executes the simulation for different theta values and prints the results along with their confidence intervals.
-    Steps:
-    Initializes random seed and simulation parameters.
-    Loops over different theta values, simulating the queueing system for each and collecting results.
-    Calculates the mean of results and the confidence interval.
-    Prints the results for each queue.
-    Measures and prints the total execution time
-    :return:
-    """
     np.random.seed(42069)
-    confidence_val = 0.05
     lambda_param = 3
     mus = [4, 5, 6, 7, 8]
     thetas = [0.60, 0.85]
     m = 5
-    n_jobs = mp.cpu_count() - 1
-    its = 100
+    its = 10000
+    Max_time = 10000
 
     t1 = time.time()
 
-    # results = []
+    results = [[] for _ in range(len(mus))]
 
     for theta in thetas:
 
-        sim = Simulation(lambda_param, mus, m, theta, 1000)
-        results = Parallel(n_jobs=n_jobs)(delayed(sim.simulate)() for _ in range(its))
+        sim = Simulation(lambda_param, mus, m, theta, Max_time)
+        results = sim.perform_multiple_runs(its)
 
         results = np.array(results)
         mean = results.mean(axis=0)
 
         # calculate CI
         low_bound, high_bound = confidence_interval(results=results)
+
+        print("--------------Setup:--------------")
+        print(f"Random Seed: {np.random.seed(42069)}")
+        print(f"Lambda Parameter: {lambda_param}")
+        print(f"Mus: {mus}")
+        print(f"Thetas: {thetas}")
+        print(f"m: {m}")
+        print(f"Iterations: {its}")
+        print(f"Max Time: {Max_time}")
 
         print(f"--------------Simulation results (theta = {theta})--------------")
         for i in range(m):
