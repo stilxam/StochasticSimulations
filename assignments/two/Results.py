@@ -1,4 +1,4 @@
-from filewithclasses import Simulation
+from Simulation import Simulation
 import numpy as np
 import time
 

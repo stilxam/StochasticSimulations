@@ -123,8 +123,6 @@ class Simulation:
     def simulate(self):
         self.fes.add(Event(Event.ARRIVAL, self.arrDist.rvs(), -1))
 
-        i_lr = 0
-
         while self.time < self.T:
             self.tOld = self.time
             event = self.fes.next()
