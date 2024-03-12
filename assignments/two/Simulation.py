@@ -349,6 +349,7 @@ class Simulation:
                 reward = salsa_dancer.get_reward(xis, self.queues, self.time, self.tOld)
 
                 # update the Q-table based on the previous state-action pair and the current state-action pair
+                # we only update the Q-value before the dispatcher makes its routing decision
                 salsa_dancer.update(
                     previous_state,
                     previous_action,
@@ -364,17 +365,6 @@ class Simulation:
 
             else:
                 self.queues[event.server_id].departure()
-
-                reward = salsa_dancer.get_reward(xis, self.queues, self.time, self.tOld)
-
-                # update the Q-table based on the previous state-action pair and the current state-action pair
-                salsa_dancer.update(
-                    previous_state,
-                    previous_action,
-                    reward,
-                    state,
-                    action
-                )
                 # if there are still customers in the queue, schedule the next departure event
                 if self.queues[event.server_id].number_of_customers > 0:
                     self.fes.add(Event(Event.DEPARTURE, self.time + self.queues[event.server_id].servDist.rvs(),
