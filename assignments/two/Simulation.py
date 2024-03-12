@@ -310,7 +310,6 @@ class Simulation:
         salsa_dancer.Q[init_index] = 0
 
         iteration = 0
-        count = 0
 
         while self.time < self.T:
             salsa_dancer.update_epsilon(iteration)
@@ -370,6 +369,17 @@ class Simulation:
 
             else:
                 self.queues[event.server_id].departure()
+
+                reward = salsa_dancer.get_reward(xis, self.queues, self.time, self.tOld)
+
+                # update the Q-table based on the previous state-action pair and the current state-action pair
+                salsa_dancer.update(
+                    previous_state,
+                    previous_action,
+                    reward,
+                    state,
+                    action
+                )
                 # if there are still customers in the queue, schedule the next departure event
                 if self.queues[event.server_id].number_of_customers > 0:
                     self.fes.add(Event(Event.DEPARTURE, self.time + self.queues[event.server_id].servDist.rvs(),
@@ -381,23 +391,49 @@ class Simulation:
 
         return self.results, salsa_dancer.Q
 
-    def perform_n_simulations(self, nr_runs):
+
+    def perform_n_simulations(self, nr_runs, dispatcher: int, alpha=None, epsilon=None, lr = None, xis=None, max_queue_length=None):
+
+        """
+        Perform n simulations of the dispatcher of choice.
+
+        Parameters:
+        - nr_runs (int): The number of simulations to perform.
+        - dispatcher (int): The type of dispatcher to use. 
+                            0 for random dispatcher, 1 for SARSA dispatcher.
+        - alpha (float): The discount factor for SARSA dispatcher.
+        - epsilon (float): The exploration probability for SARSA dispatcher.
+        - lr (float): The learning rate for SARSA dispatcher.
+        - xis (list): List of xi values for SARSA dispatcher.
+        - max_queue_length (int): The maximum permitted queue length for SARSA dispatcher.
         
+        Returns:
+        - sim_results (numpy.ndarray): An array containing the results of the simulations.
+        """
+
         sim_results = []
-        for _ in range(nr_runs):
-            sim_results.append(self.simulate_random_dispatcher())
+
+        if dispatcher == 0:
+            for _ in range(nr_runs):
+                sim_results.append(self.simulate_random_dispatcher())
+                       
+        elif dispatcher == 1:
+            for _ in range (nr_runs):
+                if alpha is None or epsilon is None or lr is None or xis is None or max_queue_length is None:
+                    raise ValueError("Alpha, epsilon, lr, xis, and max_queue_length must be provided for SARSA dispatcher")
+                sim_results.append(self.simulate_sarsa_dispatcher(alpha, epsilon, lr, xis, max_queue_length))
+        
         return np.array(sim_results)
 
-
 def dancing(n_its):
-    m = 1
-    simulation = Simulation(arrival_rate=0.7, departure_rates=[1], m=m, theta=0.5, Max_Time=10000)
+    m = 2
+    simulation = Simulation(arrival_rate=0.7, departure_rates=[1,1], m=m, theta=0.5, Max_Time=10000)
 
     results = np.empty((n_its, m))
     max_q_len = 30
     q_s = np.empty((n_its, max_q_len, max_q_len, m+1))
     for i in range(n_its):
-        results[i], q_s[i] = simulation.simulate_sarsa_dispatcher(alpha=0.9, epsilon=1, lr=0.2, xis=[2], max_queue_length=max_q_len)
+        results[i], q_s[i] = simulation.simulate_sarsa_dispatcher(alpha=0.9, epsilon=1, lr=0.2, xis=[2,2], max_queue_length=max_q_len)
     print(f"mean: {results.mean(axis=0)}")
     print(f"std: {results.std(axis=0)}")
 

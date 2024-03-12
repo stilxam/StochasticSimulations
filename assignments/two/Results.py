@@ -41,7 +41,7 @@ def main():
     for theta in thetas:
 
         sim = Simulation(lambda_param, mus, m, theta, Max_time)
-        results = sim.perform_n_simulations(its)
+        results = sim.perform_n_simulations(its, dispatcher = 0)
 
         results = np.array(results)
         mean = results.mean(axis=0)
