@@ -80,7 +80,7 @@ class SARSA():
 
         # initialize the Q-table with dimensions (max_permited_q_length, max_permited_q_length, ..., max_permited_q_length, num_of_possible_actions)
         self.Q = np.full(
-            tuple([max_permited_q_length for _ in range(num_of_possible_actions-1)] + [num_of_possible_actions]),
+            tuple([max_permited_q_length for _ in range(num_of_possible_actions - 1)] + [num_of_possible_actions]),
             -np.infty
         )
         self.lr = lr  # learning rate
@@ -118,7 +118,8 @@ class SARSA():
             # choose the action with the highest Q-value
             return int(np.argmax(self.Q[tuple(state)]))
 
-    def update(self, previous_state: np.array, previous_action: int, reward: float, current_state: np.array, current_action: int):
+    def update(self, previous_state: np.array, previous_action: int, reward: float, current_state: np.array,
+               current_action: int):
         """
         Updates the Q-value based on the SARSA update rule.
 
@@ -168,13 +169,13 @@ class SARSA():
         """
         # array of whether the number of customers in each queue is equal to the xi of that queue
         arr = [server.number_of_customers == xis[i] for i, server in enumerate(queues)]
-
+        #
         # if all the queues have the number of customers equal to their xi, return the time difference
         if all(arr):
             return current_time - previous_time
         else:
             return 0
-        
+
         # --------------------------ALTERNATIVE REWARD FUNCTION---------------------
         # total_diff = sum(abs(server.number_of_customers - xis[i]) for i, server in enumerate(queues))
         # return 1 / (0.1 + total_diff)
@@ -184,16 +185,17 @@ class Simulation:
     def __init__(self, arrival_rate: float, departure_rates: list, m, theta, Max_Time):
         self.lam = arrival_rate
         self.mus = departure_rates
-        self.theta = theta # probability of accepting a customer (for the random dispatcher strategy)
-        self.m = m # number of servers
+        self.theta = theta  # probability of accepting a customer (for the random dispatcher strategy)
+        self.m = m  # number of servers
         self.T = Max_Time
         self.arrDist = scipy.stats.expon(scale=1 / self.lam)
-        self.queues = [Queue(mu) for mu in self.mus] # the server objects
-        self.results = np.zeros(self.m) # array to store the long-term average number of customers in each queue
-        self.probabilities_q = np.ones(self.m) * (1 / self.m) # probabilities of dispatching to each server (for the random dispatcher strategy)
-        self.fes = FES() # future event list
-        self.time = 0 # current time
-        self.tOld = 0 # old time
+        self.queues = [Queue(mu) for mu in self.mus]  # the server objects
+        self.results = np.zeros(self.m)  # array to store the long-term average number of customers in each queue
+        self.probabilities_q = np.ones(self.m) * (
+                    1 / self.m)  # probabilities of dispatching to each server (for the random dispatcher strategy)
+        self.fes = FES()  # future event list
+        self.time = 0  # current time
+        self.tOld = 0  # old time
 
     def simulate_random_dispatcher(self):
         """
@@ -297,8 +299,8 @@ class Simulation:
             alpha=alpha,
             epsilon=epsilon,
             lr=lr,
-            max_permited_q_length = max_queue_length,
-            num_of_possible_actions = possible_actions
+            max_permited_q_length=max_queue_length,
+            num_of_possible_actions=possible_actions
         )
 
         # Pass the current state to the SARSA dispatcher to choose an action
@@ -319,7 +321,6 @@ class Simulation:
 
             event = self.fes.next()
             self.time = event.time
-
 
             # update the area under the curve for each queue
             for i in range(self.m):
@@ -370,12 +371,10 @@ class Simulation:
                     self.fes.add(Event(Event.DEPARTURE, self.time + self.queues[event.server_id].servDist.rvs(),
                                        event.server_id))
 
-
         for i in range(self.m):
             self.results[i] = self.queues[i].S / self.time
 
         return self.results, sarsa.Q
-
 
     def perform_n_simulations(self, nr_runs):
 
@@ -392,8 +391,9 @@ class Simulation:
         sim_results = []
         for _ in range(nr_runs):
             sim_results.append(self.simulate_random_dispatcher())
-            
+
         return np.array(sim_results)
+
 
 def confidence_interval(results, confidence=0.95):
     results = np.array(results)
@@ -407,25 +407,25 @@ def confidence_interval(results, confidence=0.95):
 
 
 def dancing(n_its):
-
-    m_sarsa = 1
+    m_sarsa = 3
     arrival_rate = 0.7
-    departure_rates = [1]
+    departure_rates = [1,1,1]
     theta = 0.5
     Max_Time = 100000
     alpha = 0.9
     epsilon = 1
     lr = 0.2
-    xis = [2]
-    max_queue_length = 30
+    xis = [2,2,2]
+    max_queue_length = 20
 
     m = 2
     simulation = Simulation(arrival_rate, departure_rates, m_sarsa, theta, Max_Time)
 
     results = np.empty((n_its, m_sarsa))
-    q_s = np.empty((n_its, max_queue_length, max_queue_length, m_sarsa+1))
+    q_s = np.empty((n_its, max_queue_length, max_queue_length, max_queue_length, m_sarsa + 1))
     for i in range(n_its):
-        results[i], q_s[i] = simulation.simulate_sarsa_dispatcher(alpha=alpha, epsilon=epsilon, xis=xis, lr=lr, max_queue_length=max_queue_length)
+        results[i], q_s[i] = simulation.simulate_sarsa_dispatcher(alpha=alpha, epsilon=epsilon, xis=xis, lr=lr,
+                                                                  max_queue_length=max_queue_length)
 
     # calculate the confidence interval of mean
     low_bound, high_bound = confidence_interval(results=results)
@@ -448,14 +448,12 @@ def dancing(n_its):
     for var_name, value in variables.items():
         print(f"{var_name}: {value}")
 
-
     # for each queue, print the sample mean of the long-term average number of customers with the confidence interval
     for i in range(m_sarsa):
         print(
             f"Queue {i + 1} has Sample mean of the long-term average number of customers: {results.mean(axis=0)[i]} with CI: [{low_bound[i]}, {high_bound[i]}]")
-        
-    # print(results)
 
+    # print(results)
 
     # print(f"average q_s: {q_s[0]}")
     # print(np.matrix(q_s[0]))
@@ -463,7 +461,6 @@ def dancing(n_its):
     from pprint import pprint
 
     pprint(q_s[0])
-
 
 
 def make_line_plot(max_number_of_runs):
@@ -476,28 +473,25 @@ def make_line_plot(max_number_of_runs):
     epsilon = 1
     lr = 0.2
     xis = [2]
-    max_queue_length = 30
 
-    n_its = 100
 
-    m = 2
-    simulation = Simulation(arrival_rate, departure_rates, m_sarsa, theta, Max_Time)
 
     results = np.empty((100, m_sarsa))
     # q_s = np.empty((n_its, max_queue_length, max_queue_length, m_sarsa + 1))
-    for i, max_queue_length in enumerate(np.linspace(1, 10000, 100)):
+    for i, max_length in enumerate(np.linspace(1, 10000, 100)):
+        simulation = Simulation(arrival_rate, departure_rates, m_sarsa, theta, max_length)
         results[i], _ = simulation.simulate_sarsa_dispatcher(alpha=alpha, epsilon=epsilon, xis=xis, lr=lr,
-                                                                  max_queue_length=max_queue_length)
+                                                             max_queue_length=20)
 
-
-    fig, ax = plt.subplots(figsize=(20, 5))
-    ax.plot(results[:,0], label=f'Queue 1')
-    ax.plot(results[:,1], label=f'Queue 2')
+    fig, ax = plt.subplots(figsize=(20, 10))
+    ax.plot(results[:, 0], label=f'Queue 1')
+    # ax.plot(results[:, 1], label=f'Queue 2')
     ax.set(xlabel='Time', ylabel='Queue Length',
            title='Queue Length over Time')
-
+    plt.legend()
+    plt.show()
 
 
 if __name__ == "__main__":
-    dancing(10)
+    dancing(1)
     # make_line_plot(100)
