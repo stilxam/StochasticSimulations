@@ -90,9 +90,8 @@ class SARSA():
 
     def choose_action(self, state: np.array) -> int:
         if np.random.uniform(0, 1) < self.epsilon:
-            return np.random.choice(self.num_actions)
+            return np.random.choice(list(range(self.num_actions)))
         else:
-            observation = self.Q
             return int(np.argmax(self.Q[tuple(state)]))
 
     def update(self, state: np.array, action: int, reward: float, next_state: np.array, next_action: int):
@@ -113,24 +112,19 @@ class SARSA():
 
         # SARSA update rule
         update_value = (1 - self.lr) * update_value + self.lr * (reward + self.alpha * new_value)
+
         # new_value = (1 - self.lr) * (old_value) + self.lr *(reward + self.alpha * next_max)
-        if reward != 0:
-            print()
-        # todo: bis
+        q = self.Q
         self.Q[tup_state] = update_value
 
     def get_reward(self, xis, queues, current_time, previous_time):
-        val = 0
-        arr = [server.number_of_customers == xis[i] for i, server in enumerate(queues)]
-        temp_state = [server.number_of_customers for server in queues]
-        if all(arr):
-            val = 1
-            # print("reward")
-        # if val == 1:
-        #     reward = (current_time - previous_time) * val
-        #     print()
-        return (current_time - previous_time) * val
-        # return 1/abs(0.1 + sum([xis[i]-cust.number_of_customers for i, cust in enumerate(queues)]))
+        # arr = [server.number_of_customers == xis[i] for i, server in enumerate(queues)]
+        # if all(arr):
+        #     return current_time - previous_time
+        # else:
+        #     return 0
+        total_diff = sum(abs(server.number_of_customers - xis[i]) for i, server in enumerate(queues))
+        return 1 / (0.1 + total_diff)
 
 
 class Simulation:
@@ -207,6 +201,7 @@ class Simulation:
 
         iteration = 0
 
+        count = 0
         while self.time < self.T:
             salsa_dancer.update_epsilon(iteration)
             self.tOld = self.time
@@ -222,6 +217,9 @@ class Simulation:
                     self.queues[i].S += (self.time - self.tOld) * (self.queues[i].number_of_customers - 1)
 
             reward = salsa_dancer.get_reward(xis, self.queues, self.time, self.tOld)
+            if reward!= 0:
+                count+=1
+
 
             if event.type == Event.ARRIVAL:
 
@@ -247,8 +245,7 @@ class Simulation:
                     salsa_dancer.Q[tuple(np.concatenate((state, [action]), dtype=int))] = 0
                 # Reward
                 # reward = salsa_dancer.get_reward(xis, self.queues, self.time, self.tOld)
-                if reward != 0:
-                    print()
+
                 salsa_dancer.update(
                     previous_state,
                     previous_action,
@@ -267,10 +264,8 @@ class Simulation:
                                        event.server_id))
 
 
-
         for i in range(self.m):
             self.results[i] = self.queues[i].S / self.time
-        # results = self.results
         return self.results, salsa_dancer.Q
 
     def perform_multiple_runs(self, nr_runs):
@@ -282,16 +277,18 @@ class Simulation:
 
 def dancing(n_its):
     m = 2
-    simulation = Simulation(arrival_rate=0.7, departure_rates=[1, 1], m=m, theta=0.5, Max_Time=1000)
+    simulation = Simulation(arrival_rate=0.7, departure_rates=[1, 1], m=m, theta=0.5, Max_Time=5000)
 
     results = np.empty((n_its, m))
-    q_s = np.empty((n_its, 20, 3))
+    q_s = np.empty((n_its, 8, 8, 3))
     for i in range(n_its):
-        results[i], q_s[i] = simulation.running_rl(alpha=0.9, epsilon=1, lr=0.2, xis=[2,2], max_queue_length=100)[0]
-    print(f"mean: {results.mean(axis=0)}")
-    print(f"std: {results.std(axis=0)}")
+        results[i], q_s[i] = simulation.running_rl(alpha=0.9, epsilon=1, lr=0.2, xis=[2,2], max_queue_length=8)
+    # print(f"mean: {results.mean(axis=0)}")
+    # print(f"std: {results.std(axis=0)}")
+
+
     print(f"average q_s: {q_s.mean(axis=0)}")
 
 
 if __name__ == "__main__":
-    dancing(10000)
+    dancing(100)
