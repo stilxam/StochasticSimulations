@@ -118,13 +118,13 @@ class SARSA():
         self.Q[tup_state] = update_value
 
     def get_reward(self, xis, queues, current_time, previous_time):
-        # arr = [server.number_of_customers == xis[i] for i, server in enumerate(queues)]
-        # if all(arr):
-        #     return current_time - previous_time
-        # else:
-        #     return 0
-        total_diff = sum(abs(server.number_of_customers - xis[i]) for i, server in enumerate(queues))
-        return 1 / (0.1 + total_diff)
+        arr = [server.number_of_customers == xis[i] for i, server in enumerate(queues)]
+        if all(arr):
+            return current_time - previous_time
+        else:
+            return 0
+        # total_diff = sum(abs(server.number_of_customers - xis[i]) for i, server in enumerate(queues))
+        # return 1 / (0.1 + total_diff)
 
 
 class Simulation:
@@ -277,17 +277,18 @@ class Simulation:
 
 def dancing(n_its):
     m = 2
-    simulation = Simulation(arrival_rate=0.7, departure_rates=[1, 1], m=m, theta=0.5, Max_Time=5000)
+    simulation = Simulation(arrival_rate=0.7, departure_rates=[1, 1], m=m, theta=0.5, Max_Time=10000)
 
     results = np.empty((n_its, m))
-    q_s = np.empty((n_its, 8, 8, 3))
+    max_q_len = 30
+    q_s = np.empty((n_its, max_q_len, max_q_len, 3))
     for i in range(n_its):
-        results[i], q_s[i] = simulation.running_rl(alpha=0.9, epsilon=1, lr=0.2, xis=[2,2], max_queue_length=8)
-    # print(f"mean: {results.mean(axis=0)}")
-    # print(f"std: {results.std(axis=0)}")
+        results[i], q_s[i] = simulation.running_rl(alpha=0.9, epsilon=1, lr=0.2, xis=[2,2], max_queue_length=max_q_len)
+    print(f"mean: {results.mean(axis=0)}")
+    print(f"std: {results.std(axis=0)}")
 
 
-    print(f"average q_s: {q_s.mean(axis=0)}")
+    # print(f"average q_s: {q_s.mean(axis=0)}")
 
 
 if __name__ == "__main__":
