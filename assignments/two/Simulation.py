@@ -269,6 +269,21 @@ class Simulation:
         return self.results
 
     def simulate_sarsa_dispatcher(self, alpha, epsilon, xis, lr, max_queue_length):
+        """
+        Simulates the SARSA dispatcher algorithm.
+
+        Parameters:
+        - alpha (float): The discount factor.
+        - epsilon (float): The exploration probability for SARSA.
+        - xis (list): List of xi values.
+        - lr (float): The learning rate.
+        - max_queue_length (int): The maximum permitted queue length.
+
+        Returns:
+        - results (list): List of average queue lengths.
+        - Q (dict): The Q-table learned by SARSA.
+        """
+    def simulate_sarsa_dispatcher(self, alpha, epsilon, xis, lr, max_queue_length):
 
         # generate first arrival and add it to the FES (no server ID yet, hence -1)
         self.fes.add(Event(Event.ARRIVAL, self.arrDist.rvs(), -1))
