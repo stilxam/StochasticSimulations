@@ -27,6 +27,8 @@ def main():
 
     results = [[] for _ in range(len(mus))]
 
+    # -----------------------------------------------Random Dispatcher results----------------------------------------------- #
+
     print("--------------Setup:--------------")
     print(f"Random Seed: {np.random.seed(42069)}")
     print(f"Lambda Parameter: {lambda_param}")
@@ -41,7 +43,7 @@ def main():
     for theta in thetas:
 
         sim = Simulation(lambda_param, mus, m, theta, Max_time)
-        results = sim.perform_n_simulations(its, dispatcher = 0)
+        results = sim.perform_n_simulations(its)
 
         results = np.array(results)
         mean = results.mean(axis=0)
@@ -55,6 +57,41 @@ def main():
                 f"Queue {i + 1} has Sample mean of the long-term average number of customers: {mean[i]} with CI: [{low_bound[i]}, {high_bound[i]}]")
         
         print("\n")
+
+    # -----------------------------------------------Sarsa Dispatcher results----------------------------------------------- #
+    
+    # # Define parameters
+    # m_sarsa = 2
+    # arrival_rate = 0.7
+    # departure_rates = [1, 1]
+    # theta = 0.5
+    # Max_Time = 10000
+    # alpha = 0.9
+    # epsilon = 1
+    # lr = 0.2
+    # xis = [2, 2]
+    # max_queue_length = 30
+    # n_its = 10000 
+
+    # # Initialize arrays to store results
+    # results = np.empty((n_its, m_sarsa))
+    # q_s = np.empty((n_its, max_queue_length, max_queue_length, m_sarsa+1))
+
+    # # Initialize simulation (again)
+    # sim2 = Simulation(lambda_param, mus, m_sarsa, theta, Max_time)
+
+    # # Perform simulations
+    # for i in range(n_its):
+    #     results[i], q_s[i] = sim2.simulate_sarsa_dispatcher(alpha=alpha, epsilon=epsilon, lr=lr, xis=xis, max_queue_length=max_queue_length)
+
+    # # Print results
+    # print(f"mean: {results.mean(axis=0)}")
+    # print(f"std: {results.std(axis=0)}")
+    # print(results)
+    # print(f"average q_s: {q_s[0]}")
+
+    
+
 
 
     t2 = time.time()

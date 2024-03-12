@@ -283,7 +283,7 @@ class Simulation:
         - results (list): List of average queue lengths.
         - Q (dict): The Q-table learned by SARSA.
         """
-    def simulate_sarsa_dispatcher(self, alpha, epsilon, xis, lr, max_queue_length):
+    def simulate_sarsa_dispatcher(self, alpha, epsilon, xis: list, lr, max_queue_length):
 
         # generate first arrival and add it to the FES (no server ID yet, hence -1)
         self.fes.add(Event(Event.ARRIVAL, self.arrDist.rvs(), -1))
@@ -377,37 +377,22 @@ class Simulation:
         return self.results, sarsa.Q
 
 
-    def perform_n_simulations(self, nr_runs, dispatcher: int, alpha=None, epsilon=None, lr = None, xis=None, max_queue_length=None):
+    def perform_n_simulations(self, nr_runs):
 
         """
         Perform n simulations of the dispatcher of choice.
 
         Parameters:
         - nr_runs (int): The number of simulations to perform.
-        - dispatcher (int): The type of dispatcher to use. 
-                            0 for random dispatcher, 1 for SARSA dispatcher.
-        - alpha (float): The discount factor for SARSA dispatcher.
-        - epsilon (float): The exploration probability for SARSA dispatcher.
-        - lr (float): The learning rate for SARSA dispatcher.
-        - xis (list): List of xi values for SARSA dispatcher.
-        - max_queue_length (int): The maximum permitted queue length for SARSA dispatcher.
         
         Returns:
-        - sim_results (numpy.ndarray): An array containing the results of the simulations.
+        - sim_results (np.array): An array of simulation results.
         """
 
         sim_results = []
-
-        if dispatcher == 0:
-            for _ in range(nr_runs):
-                sim_results.append(self.simulate_random_dispatcher())
-                       
-        elif dispatcher == 1:
-            for _ in range (nr_runs):
-                if alpha is None or epsilon is None or lr is None or xis is None or max_queue_length is None:
-                    raise ValueError("Alpha, epsilon, lr, xis, and max_queue_length must be provided for SARSA dispatcher")
-                sim_results.append(self.simulate_sarsa_dispatcher(alpha, epsilon, lr, xis, max_queue_length))
-        
+        for _ in range(nr_runs):
+            sim_results.append(self.simulate_random_dispatcher())
+            
         return np.array(sim_results)
 
 def dancing(n_its):
