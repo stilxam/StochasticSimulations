@@ -326,10 +326,6 @@ class Simulation:
                 if self.queues[i].number_of_customers > 0:
                     self.queues[i].S += (self.time - self.tOld) * (self.queues[i].number_of_customers - 1)
 
-            # calculate the reward based on the number of customers in each queue
-            # TODO: IS THIS THE CORRECT POSITION?
-            # reward = salsa_dancer.get_reward(xis, self.queues, self.time, self.tOld)
-
             if event.type == Event.ARRIVAL:
                 # choose an action based on the current system state (i.e. number of customers in each queue)
                 action = salsa_dancer.choose_action([queue.number_of_customers for queue in self.queues])
@@ -350,7 +346,6 @@ class Simulation:
                     salsa_dancer.Q[tuple(np.concatenate((state, [action]), dtype=int))] = 0
 
                 # calculate the reward based on the number of customers in each queue
-                # TODO: IS THIS THE CORRECT POSITION?
                 reward = salsa_dancer.get_reward(xis, self.queues, self.time, self.tOld)
 
                 # update the Q-table based on the previous state-action pair and the current state-action pair
