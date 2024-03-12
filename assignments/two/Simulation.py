@@ -293,7 +293,7 @@ class Simulation:
 
         xis = [xi + 1 for xi in xis]  # we add 1 to the xi to account for the person being processed
 
-        salsa_dancer = SARSA(
+        sarsa = SARSA(
             alpha=alpha,
             epsilon=epsilon,
             lr=lr,
@@ -307,12 +307,12 @@ class Simulation:
 
         # Set the first state-action pair to 0
         init_index = tuple(np.concatenate((state, action), dtype=int))
-        salsa_dancer.Q[init_index] = 0
+        sarsa.Q[init_index] = 0
 
         iteration = 0
 
         while self.time < self.T:
-            salsa_dancer.update_epsilon(iteration)
+            sarsa.update_epsilon(iteration)
             self.tOld = self.time
             previous_state = state
             previous_action = action
@@ -328,7 +328,7 @@ class Simulation:
 
             if event.type == Event.ARRIVAL:
                 # choose an action based on the current system state (i.e. number of customers in each queue)
-                action = salsa_dancer.choose_action([queue.number_of_customers for queue in self.queues])
+                action = sarsa.choose_action([queue.number_of_customers for queue in self.queues])
 
                 # applying action
                 if action != self.m:
@@ -342,15 +342,15 @@ class Simulation:
                 # person is dispatched, hence, state is updated
                 state = [queue.number_of_customers for queue in self.queues]
 
-                if salsa_dancer.Q[tuple(np.concatenate((state, [action]), dtype=int))] == -np.infty:
-                    salsa_dancer.Q[tuple(np.concatenate((state, [action]), dtype=int))] = 0
+                if sarsa.Q[tuple(np.concatenate((state, [action]), dtype=int))] == -np.infty:
+                    sarsa.Q[tuple(np.concatenate((state, [action]), dtype=int))] = 0
 
                 # calculate the reward based on the number of customers in each queue
-                reward = salsa_dancer.get_reward(xis, self.queues, self.time, self.tOld)
+                reward = sarsa.get_reward(xis, self.queues, self.time, self.tOld)
 
                 # update the Q-table based on the previous state-action pair and the current state-action pair
                 # we only update the Q-value before the dispatcher makes its routing decision
-                salsa_dancer.update(
+                sarsa.update(
                     previous_state,
                     previous_action,
                     reward,
@@ -374,7 +374,7 @@ class Simulation:
         for i in range(self.m):
             self.results[i] = self.queues[i].S / self.time
 
-        return self.results, salsa_dancer.Q
+        return self.results, sarsa.Q
 
 
     def perform_n_simulations(self, nr_runs, dispatcher: int, alpha=None, epsilon=None, lr = None, xis=None, max_queue_length=None):
