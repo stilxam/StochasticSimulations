@@ -2,6 +2,8 @@ from types import prepare_class
 import numpy as np
 import scipy
 import heapq
+
+from matplotlib import pyplot as plt
 from tqdm.auto import tqdm
 
 
@@ -405,6 +407,7 @@ def confidence_interval(results, confidence=0.95):
 
 
 def dancing(n_its):
+
     m_sarsa = 1
     arrival_rate = 0.7
     departure_rates = [1]
@@ -462,5 +465,39 @@ def dancing(n_its):
     pprint(q_s[0])
 
 
+
+def make_line_plot(max_number_of_runs):
+    m_sarsa = 1
+    arrival_rate = 0.7
+    departure_rates = [1]
+    theta = 0.5
+    Max_Time = 100000
+    alpha = 0.9
+    epsilon = 1
+    lr = 0.2
+    xis = [2]
+    max_queue_length = 30
+
+    n_its = 100
+
+    m = 2
+    simulation = Simulation(arrival_rate, departure_rates, m_sarsa, theta, Max_Time)
+
+    results = np.empty((100, m_sarsa))
+    # q_s = np.empty((n_its, max_queue_length, max_queue_length, m_sarsa + 1))
+    for i, max_queue_length in enumerate(np.linspace(1, 10000, 100)):
+        results[i], _ = simulation.simulate_sarsa_dispatcher(alpha=alpha, epsilon=epsilon, xis=xis, lr=lr,
+                                                                  max_queue_length=max_queue_length)
+
+
+    fig, ax = plt.subplots(figsize=(20, 5))
+    ax.plot(results[:,0], label=f'Queue 1')
+    ax.plot(results[:,1], label=f'Queue 2')
+    ax.set(xlabel='Time', ylabel='Queue Length',
+           title='Queue Length over Time')
+
+
+
 if __name__ == "__main__":
-    dancing(1)
+    dancing(10)
+    # make_line_plot(100)
