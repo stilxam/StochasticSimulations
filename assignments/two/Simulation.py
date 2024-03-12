@@ -73,10 +73,14 @@ class SARSA():
     def __init__(self, alpha, epsilon, lr, num_states: int, num_actions: int):
         self.alpha: float = alpha  # discount factor
         self.epsilon: float = epsilon  # exploration probabilities
-        self.num_states: int = num_states
-        self.num_actions: int = num_actions
+        self.num_states: int = num_states  # number of customers in the queue
+        self.num_actions: int = num_actions  # server that we can dispatch to
 
-        self.Q = np.full((num_states, num_actions), -np.infty)
+        self.Q = np.full(
+            tuple([num_states for q in range(num_actions)] + [num_actions + 1]),
+            # we increment by 1 to account for the discard action
+            -np.infty
+        )
         self.lr = lr  # learning rate
 
     def update_epsilon(self, n):
@@ -85,24 +89,39 @@ class SARSA():
         else:
             self.epsilon = max([0.99 * (1 - (n - 1000) / (10000)), 0.01])
 
-    def choose_action(self, state) -> int:
+    def choose_action(self, state: np.array) -> int:
         if np.random.uniform(0, 1) < self.epsilon:
             return np.random.choice(self.num_actions)
         else:
-            return int(np.argmax(self.Q[state]))
+            return int(np.argmax(self.Q[tuple(state)]))
 
-    def update(self, state: int, action: int, reward: float, next_state: int, next_action: int):
+    def update(self, state: np.array, action: int, reward: float, next_state: np.array, next_action: int):
         """Update the Q-value for the given state-action pair."""
-        update_value = self.Q[state, action]
-        new_value = self.Q[next_state, next_action]
+        # todo state will be a list, and join it to the action value to make a n+1 long key
+
+        tup_state = tuple(state + [action])
+
+        update_value = self.Q[tup_state]
+
+        new_tup_state = tuple(next_state + [next_action])
+        new_value = self.Q[new_tup_state]
 
         # SARSA update rule
-        update_value = (1 - self.lr) * (update_value) + self.lr * (reward + self.alpha * new_value)
+        update_value = (1 - self.lr) * update_value + self.lr * (reward + self.alpha * new_value)
         # new_value = (1 - self.lr) * (old_value) + self.lr *(reward + self.alpha * next_max)
-        self.Q[state, action] = update_value
+        # todo: bis
+        self.Q[tup_state] = update_value
 
-    def get_reward(self, xi, queues):
-        return 1 / (abs(xi - sum([cust.number_of_customers for cust in queues])) + 0.1)
+    def get_reward(self, xis, queues, current_time, previous_time):
+        val = 0
+        # check if for all queues, the number of customers is equal to xi of that queue
+        # i.e. each queue has its own xi
+        val = 0
+        arr = [server.number_of_customers == xis[i] for i, server in enumerate(queues)]
+        if all(arr):
+            val = 1
+        return (current_time - previous_time) * val
+        # return 1 / (abs(xi - sum([cust.number_of_customers for cust in queues])) + 0.1)
 
 
 class Simulation:
@@ -156,22 +175,27 @@ class Simulation:
 
         return self.results
 
-    def running_rl(self, alpha, epsilon, xi, lr, num_states, num_actions):
+    def running_rl(self, alpha, epsilon, xis, lr, max_queue_length):
         self.fes.add(Event(Event.ARRIVAL, self.arrDist.rvs(), -1))
+        num_actions = len(self.queues)
+
+        xis = [xi + 1 for xi in xis]  # we add 1 to the xi to account for the person being processed
 
         salsa_dancer = SARSA(
             alpha=alpha,
             epsilon=epsilon,
-            lr=1,
-            num_states=num_states,
+            lr=lr,
+            num_states=max_queue_length,
             num_actions=num_actions
         )
         # Pass the current state to the dispatcher to choose an action
-        state = 0
-        action = np.random.choice(num_actions)
+        state = np.zeros(num_actions)
+        action = [np.random.choice(num_actions + 1)]
 
         # Set the first state-action pair to 0
-        salsa_dancer.Q[state, action] = 0
+        init_index = tuple(np.concatenate([state, action]))
+        shape = salsa_dancer.Q.shape
+        salsa_dancer.Q[init_index] = np.zeros(num_actions + 1)
 
         iteration = 0
 
@@ -189,30 +213,28 @@ class Simulation:
                 if self.queues[i].number_of_customers > 0:
                     self.queues[i].S += (self.time - self.tOld) * (self.queues[i].number_of_customers - 1)
 
+            reward = salsa_dancer.get_reward(xis, self.queues, self.time, self.tOld)
+
             if event.type == Event.ARRIVAL:
 
-                # TODO: dispatch happens here
-
-                action = salsa_dancer.choose_action(self.queues[0].number_of_customers)
+                action = salsa_dancer.choose_action([queue.number_of_customers for queue in self.queues])
 
                 # applying action
-                if action == 1:
+                if action != num_actions:
                     # consequences of the dispatch
                     # server_id = np.random.choice(range(self.m), p=self.probabilities_q)
-                    self.queues[0].arrival()
+                    self.queues[action].arrival()
                     # check if the server was idle prior to the current arrival
-                    if self.queues[0].status == Queue.IDLE:
+                    if self.queues[action].status == Queue.IDLE:
                         self.fes.add(
-                            Event(Event.DEPARTURE, self.time + self.queues[0].servDist.rvs(), 0))
+                            Event(Event.DEPARTURE, self.time + self.queues[action].servDist.rvs(), action))
 
                 # person is dispatched, hence, state is updated
-                state = self.queues[0].number_of_customers
+                state = [queue.number_of_customers for queue in self.queues]
 
-                if salsa_dancer.Q[state, action] == -np.infty:
-                    salsa_dancer.Q[state, action] = 0
+                if salsa_dancer.Q[tuple(state + [action])] == -np.infty:
+                    salsa_dancer.Q[tuple(state + [action])] = np.zeros(num_actions + 1)
                 # Reward
-
-                reward = salsa_dancer.get_reward(xi, self.queues)
 
                 salsa_dancer.update(
                     previous_state,
@@ -248,7 +270,7 @@ def dancing(n_its):
 
     results = np.empty(n_its)
     for i in tqdm(range(n_its)):
-        results[i] = simulation.running_rl(alpha=0.9, epsilon=1, lr=0.2, xi=3, num_states=100, num_actions=2)[0]
+        results[i] = simulation.running_rl(alpha=0.9, epsilon=1, lr=0.2, xis=[3], max_queue_length=10)[0]
     print(f"mean: {results.mean()}")
     print(f"std: {results.std()}")
 
