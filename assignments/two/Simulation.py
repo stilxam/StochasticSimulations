@@ -405,7 +405,6 @@ def confidence_interval(results, confidence=0.95):
 
 
 def dancing(n_its):
-
     m_sarsa = 1
     arrival_rate = 0.7
     departure_rates = [1]
