@@ -16,10 +16,10 @@ def confidence_interval(results, confidence=0.95):
 
 def main():
     np.random.seed(42069)
-    lambda_param = 3
-    mus = [4, 5, 6, 7, 8]
-    thetas = [0.60, 0.85]
-    m = 5
+    lambda_param = 0.7
+    mus = [1]
+    thetas = [0.6]
+    m = 1
     its = 10000
     Max_time = 10000
 

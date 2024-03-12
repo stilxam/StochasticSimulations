@@ -283,8 +283,6 @@ class Simulation:
         - results (list): List of average queue lengths.
         - Q (dict): The Q-table learned by SARSA.
         """
-    def simulate_sarsa_dispatcher(self, alpha, epsilon, xis: list, lr, max_queue_length):
-
         # generate first arrival and add it to the FES (no server ID yet, hence -1)
         self.fes.add(Event(Event.ARRIVAL, self.arrDist.rvs(), -1))
 
@@ -395,23 +393,75 @@ class Simulation:
             
         return np.array(sim_results)
 
+def confidence_interval(results, confidence=0.95):
+    results = np.array(results)
+    mean = results.mean(axis=0)
+    std_dev = results.std(axis=0, ddof=1)
+
+    low = mean - (1.96 * (std_dev / np.sqrt(len(results))))
+    high = mean + (1.96 * (std_dev / np.sqrt(len(results))))
+
+    return low, high
+
+
 def dancing(n_its):
+
+    m_sarsa = 1
+    arrival_rate = 0.7
+    departure_rates = [1]
+    theta = 0.5
+    Max_Time = 100000
+    alpha = 0.9
+    epsilon = 1
+    lr = 0.2
+    xis = [2]
+    max_queue_length = 30
+
     m = 2
-    simulation = Simulation(arrival_rate=0.7, departure_rates=[1,1], m=m, theta=0.5, Max_Time=10000)
+    simulation = Simulation(arrival_rate, departure_rates, m_sarsa, theta, Max_Time)
 
-    results = np.empty((n_its, m))
-    max_q_len = 30
-    q_s = np.empty((n_its, max_q_len, max_q_len, m+1))
+    results = np.empty((n_its, m_sarsa))
+    q_s = np.empty((n_its, max_queue_length, max_queue_length, m_sarsa+1))
     for i in range(n_its):
-        results[i], q_s[i] = simulation.simulate_sarsa_dispatcher(alpha=0.9, epsilon=1, lr=0.2, xis=[2,2], max_queue_length=max_q_len)
-    print(f"mean: {results.mean(axis=0)}")
-    print(f"std: {results.std(axis=0)}")
+        results[i], q_s[i] = simulation.simulate_sarsa_dispatcher(alpha=alpha, epsilon=epsilon, xis=xis, lr=lr, max_queue_length=max_queue_length)
 
-    print(results)
+    # calculate the confidence interval of mean
+    low_bound, high_bound = confidence_interval(results=results)
+
+    # Define a dictionary with variable names and their values
+    variables = {
+        "alpha": alpha,
+        "epsilon": epsilon,
+        "lr": lr,
+        "max_queue_length": max_queue_length,
+        "arrival_rate": arrival_rate,
+        "departure_rates": departure_rates,
+        "Max_Time": Max_Time,
+        "xis": xis,
+        "m": m_sarsa,
+        "Number of simulations": n_its
+    }
+
+    # Loop through the dictionary and print each pair
+    for var_name, value in variables.items():
+        print(f"{var_name}: {value}")
 
 
-    print(f"average q_s: {q_s[0]}")
+    # for each queue, print the sample mean of the long-term average number of customers with the confidence interval
+    for i in range(m_sarsa):
+        print(
+            f"Queue {i + 1} has Sample mean of the long-term average number of customers: {results.mean(axis=0)[i]} with CI: [{low_bound[i]}, {high_bound[i]}]")
+        
+    # print(results)
+
+
+    # print(f"average q_s: {q_s[0]}")
+    # print(np.matrix(q_s[0]))
+
+    from pprint import pprint
+
+    pprint(q_s[0])
 
 
 if __name__ == "__main__":
-    dancing(10000)
+    dancing(1)
