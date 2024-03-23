@@ -16,6 +16,7 @@ class Customer:
                  parking_preference = NO_PREFERENCE,
                  shop_yes_no = False):
         
+        self.system_entry_time = 0 # time the customer entered the system
         self.arrival_time = arrival_time
         self.fuel_time = fuel_time
         self.shop_time = shop_time
@@ -25,6 +26,7 @@ class Customer:
         self.entrance_queue_time = 0 # time spent in entrance queue
         self.parking_preference = parking_preference
         self.wants_to_shop = shop_yes_no
+        self.fuel_pump = None
 
 
 class FES:
@@ -58,18 +60,17 @@ class Event:
     SHOP_DEPARTURE = 2  # constant for shop departure type
     PAYMENT_DEPARTURE = 3  # constant for payment departure type
 
-    def __init__(self, typ, cust_id, time):
-        self.type = typ
-        cust_id = cust_id
-        self.time = time # time of the event
-        # self.server_id = id
+    def __init__(self, type, customer: Customer, time_of_event):
+        self.type = type
+        self.customer = customer
+        self.time = time_of_event 
 
     def __lt__(self, other):
         return self.time < other.time
 
     def __repr__(self):
         s = ("Arrival", "Fuel Departure", "Shop Departure", "Payment Departure")
-        return f"customer {self.cust_id} has event type {s[self.type]} at time {self.time}"
+        return f"customer {self.customer.cust_id} has event type {s[self.type]} at time {self.time}"
 
 class Queue:
 
@@ -136,6 +137,7 @@ class Simulation:
         self.shop_yes_no_dist = shop_yes_no_dist
 
         # total simulation duration is 960 minutes (i.e. 16 hours from 6 am to 10 pm)
+        # TODO: check whether the input data is in seconds or minutes 
         self.max_time = 960 # in minutes 
         self.fes = FES()
         
@@ -161,13 +163,14 @@ class Simulation:
 
     # given a customer, it will set up the customer's data
     def set_customer_data(self, customer: Customer):
-        customer.fuel_time = self.fuel_time_dist.rvs()
-        customer.shop_time = self.shop_time_dist.rvs()
-        customer.payment_time = self.payment_time_dist.rvs()
-        customer.parking_preference = self.parking_preference_dist.rvs()
-        customer.wants_to_shop = self.shop_yes_no_dist.rvs()
+        temp_customer = customer
+        temp_customer.fuel_time = self.fuel_time_dist.rvs()
+        temp_customer.shop_time = self.shop_time_dist.rvs()
+        temp_customer.payment_time = self.payment_time_dist.rvs()
+        temp_customer.parking_preference = self.parking_preference_dist.rvs()
+        temp_customer.wants_to_shop = self.shop_yes_no_dist.rvs()
 
-        return customer
+        return temp_customer
 
     def handle_no_preference(self, customer: Customer):
 
@@ -192,7 +195,7 @@ class Simulation:
             return 0
         
         else:
-            return -1
+            return -1 
     
     def handle_left_preference(self, customer: Customer):
 
@@ -221,12 +224,19 @@ class Simulation:
             return -1 # cannot assign the customer to a pump
     
 
+    def find_pump_and_customer(self, event: Event):
+        for pump in self.pump_stations:
+            if pump.current_customer.cust_id == event.cust_id:
+                return pump, pump.current_customer
+    
+
     def base_simulation (self):
 
         #logic goes here 
         self.customer_id += 1
-        self.fes.add(Event(Event.ARRIVAL, self.customer_id, self.interarrival_dist.rvs()))
-        customer = Customer(event.cust_id, arrival_time = self.current_time)
+        arrival_time = self.interarrival_dist.rvs()
+        self.fes.add(Event(Event.ARRIVAL, self.customer_id, arrival_time))
+        customer = Customer(event.cust_id, arrival_time = arrival_time)
         customer = self.set_customer_data(customer)
 
         while self.current_time < self.max_time:
@@ -238,48 +248,68 @@ class Simulation:
             if event.type == Event.ARRIVAL:
                 self.entry_queue.join_queue(customer)
 
-                if (self.entry_queue.get_queue_status() == Queue.NOT_EMPTY):
+                # if (self.entry_queue.get_queue_status() == Queue.NOT_EMPTY):
 
-                    # check the preference of the first customer
-                    temp_preference = self.entry_queue.customers_in_queue[0].parking_preference
-                    
-                    if temp_preference == Customer.NO_PREFERENCE:
-                        status = self.handle_no_preference(self.entry_queue.customers_in_queue[0])
-                    
-                    elif temp_preference == Customer.LEFT:
-                        status = self.handle_left_preference(self.entry_queue.customers_in_queue[0])
-                    
-                    elif temp_preference == Customer.RIGHT:
-                        status = self.handle_right_preference(self.entry_queue.customers_in_queue[0])
-                    
-                    if status == 0:
-                        # update wating time of customer in entry queue
-                        self.entry_queue.customers_in_queue[0].entrance_queue_time = self.current_time - self.entry_queue.customers_in_queue[0].arrival_time
-                        self.entry_queue.leave_queue()
-                        self.fes.add(Event(Event.FUEL_DEPARTURE, self.entry_queue.customers_in_queue[0].cust_id, self.current_time + self.entry_queue.customers_in_queue[0].fuel_time))
+                # check the preference of the first customer
+                temp_preference = self.entry_queue.customers_in_queue[0].parking_preference
+                
+                if temp_preference == Customer.NO_PREFERENCE:
+                    status = self.handle_no_preference(self.entry_queue.customers_in_queue[0])
+                
+                elif temp_preference == Customer.LEFT:
+                    status = self.handle_left_preference(self.entry_queue.customers_in_queue[0])
+                
+                elif temp_preference == Customer.RIGHT:
+                    status = self.handle_right_preference(self.entry_queue.customers_in_queue[0])
+                
+                if status == 0:
+                    # update wating time of customer in entry queue
+                    self.entry_queue.customers_in_queue[0].entrance_queue_time = self.current_time - self.entry_queue.customers_in_queue[0].arrival_time
+                    self.entry_queue.leave_queue()
+                    self.fes.add(Event(Event.FUEL_DEPARTURE, self.entry_queue.customers_in_queue[0].cust_id, self.current_time + self.entry_queue.customers_in_queue[0].fuel_time))
 
             
             if event.type == Event.FUEL_DEPARTURE:
 
                 # find the fuel pump that the customer was assigned to
-                for pump in self.pump_stations:
-                    if pump.current_customer.cust_id == event.cust_id:
-                        current_customer = pump.current_customer
-                        break
+                pump, current_customer = self.find_pump_and_customer(event)
                 
-                if customer.wants_to_shop:
+                if current_customer.wants_to_shop:
                     # add customer to the shop queue and create a shop departure event
                     self.shop_queue.join_queue(current_customer)
                     self.fes.add(Event(Event.SHOP_DEPARTURE, current_customer.cust_id, self.current_time + current_customer.shop_time))
-                    self.pump_stations[pump].customer_leave()
+                    # NOTE :customer only leaves when they pay
+                    # self.pump_stations[pump].customer_leave()
                 
                 else: 
-                    self.payment_queue.join_queue(current_customer)
-                    self.pump_stations[pump].customer_leave()
+                    # if cashier is idle, customer can go to pay straight away
+                    if self.cashier.status == Server.IDLE:
+                        self.cashier.customer_arrive(current_customer)
+                        self.fes.add(Event(Event.PAYMENT_DEPARTURE, current_customer.cust_id, self.current_time + current_customer.payment_time))
+                    
+                    else:
+                        # otherwise, they join the payment queue
+                        self.payment_queue.join_queue(current_customer)
+                    # self.pump_stations[pump].customer_leave()
             
             if event.type == Event.SHOP_DEPARTURE:
-                self.payment_queue.join_queue()
-                y = 0
+                
+                # finding current customer 
+                for customer in self.shop_queue.customers_in_queue:
+                    if customer.cust_id == event.cust_id:
+                        current_customer = customer
+                        break
+                
+                # if cashier is idle, customer can go to pay straight away
+                if self.cashier.status == Server.IDLE:
+                    self.cashier.customer_arrive(current_customer)
+                    self.fes.add(Event(Event.PAYMENT_DEPARTURE, current_customer.cust_id, self.current_time + current_customer.payment_time))
+                    
+                else:
+                    # otherwise, they join the payment queue
+                    self.payment_queue.join_queue(current_customer)
+                    # self.pump_stations[pump].customer_leave()
+
             
             if event.type == Event.PAYMENT_DEPARTURE:
                 # implement logic
