@@ -288,8 +288,8 @@ class Simulation:
                     # update wating time of customer in entry queue
                     self.entry_queue.customers_in_queue[0].entrance_queue_time = self.current_time - self.entry_queue.customers_in_queue[0].system_entry_time
                     self.entry_queue.customers_in_queue[0].fuel_pump = status
-                    self.entry_queue.leave_queue()
                     self.fes.add(Event(Event.FUEL_DEPARTURE, self.entry_queue.customers_in_queue[0], self.current_time + self.fuel_time_dist.rvs()))
+                    self.entry_queue.leave_queue()
             
                 # generate the next arrival 
                 self.customer_id += 1
@@ -330,11 +330,13 @@ class Simulation:
                     current_customer.payment_queue_time = 0
                     self.cashier.customer_arrive(current_customer)
                     self.fes.add(Event(Event.PAYMENT_DEPARTURE, current_customer, self.current_time + self.payment_time_dist.rvs()))
+                    self.shop_queue.leave_queue()
                     
                 else:
                     # otherwise, they join the payment queue
                     current_customer.payment_queue_time = self.current_time # save the time the customer joined the payment queue and used to calculate the time spent in the queue later
                     self.payment_queue.join_queue(current_customer)
+                    self.shop_queue.leave_queue()
                     # self.pump_stations[pump].customer_leave()
 
             
@@ -413,6 +415,18 @@ class Simulation:
                     else:
                         self.waiting_to_leave.join_queue(current_customer)
                 
+                # if there are customers waiting to pay, the first customer in the queue goes to the cashier
+                if self.payment_queue.get_queue_status() == Queue.NOT_EMPTY:
+                    next_customer = self.payment_queue.customers_in_queue[0]
+                    next_customer.payment_queue_time = self.current_time - next_customer.payment_queue_time
+                    self.cashier.customer_arrive(next_customer)
+                    self.fes.add(Event(Event.PAYMENT_DEPARTURE, next_customer, self.current_time + self.payment_time_dist.rvs()))
+                    self.payment_queue.leave_queue()
+
+                # else, cashier becomes idle
+                elif self.payment_queue.get_queue_status() == Queue.EMPTY:
+                    self.cashier.customer_leave()
+                
                 # check if there is a customer waiting in the entrance queue
                 if self.entry_queue.get_queue_status() == Queue.NOT_EMPTY:
                     temp_preference = self.entry_queue.customers_in_queue[0].parking_preference
@@ -430,16 +444,16 @@ class Simulation:
                         # update wating time of customer in entry queue
                         self.entry_queue.customers_in_queue[0].entrance_queue_time = self.current_time - self.entry_queue.customers_in_queue[0].system_entry_time
                         self.entry_queue.customers_in_queue[0].fuel_pump = status
-                        self.entry_queue.leave_queue()
                         self.fes.add(Event(Event.FUEL_DEPARTURE, self.entry_queue.customers_in_queue[0], self.current_time + self.fuel_time_dist.rvs()))
+                        self.entry_queue.leave_queue()
     
         results = []
         results.append(np.mean(self.waiting_time_entrance_queue))
         results.append(np.mean(self.waiting_time_payment_queue))
         results.append(np.mean(self.total_time_spent_in_system))
-        results.append(self.queue_length_fuel_station / self.current_time)
-        results.append(self.queue_length_shop / self.current_time)
-        results.append(self.queue_length_payment / self.current_time)
+        results.append(np.sum(self.queue_length_fuel_station) / self.current_time)
+        results.append(np.sum(self.queue_length_shop) / self.current_time)
+        results.append(np.sum(self.queue_length_payment) / self.current_time)
 
         return results
 
@@ -459,7 +473,15 @@ def main():
 
     results = sim.base_simulation()
 
-    print(results)
+    print("--------------------Results-------------------")
+    print("Average waiting time in the entrance queue: ", results[0])
+    print("Average waiting time in the payment queue: ", results[1])
+    print("Average time spent in the system: ", results[2])
+    print("Average queue length of the fuel station: ", results[3])
+    print("Average queue length of the shop: ", results[4])
+    print("Average queue length of the payment queue: ", results[5])
+
+    # print(results)
 
 
 if __name__ == "__main__":
