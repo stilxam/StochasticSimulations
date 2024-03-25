@@ -115,6 +115,7 @@ class Server:
 
     def customer_leave(self):
         self.status = Server.IDLE
+        self.current_customer = None
 
 
 class Simulation:
