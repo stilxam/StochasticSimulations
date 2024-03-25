@@ -457,7 +457,7 @@ class Simulation:
                     self.cashier.customer_arrive(next_customer)
                     self.fes.add(
                         Event(Event.PAYMENT_DEPARTURE, next_customer, self.current_time + self.payment_time_dist.rvs()))
-                    self.payment_queue.leave_queue(current_customer)
+                    self.payment_queue.leave_queue(next_customer)
 
                 # else, cashier becomes idle
                 elif self.payment_queue.get_queue_status() == Queue.EMPTY:
