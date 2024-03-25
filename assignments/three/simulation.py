@@ -122,24 +122,33 @@ class Server:
 
 class Simulation:
 
-    def __init__(self, interarrival_dist: stats.gamma, 
-                 fuel_time_dist:  stats.gamma,
-                 shop_time_dist: stats.gamma,
-                 payment_time_dist: stats.gamma,
-                #  parking_preference_dist: stats.gamma,
-                #  shop_yes_no_dist: stats.bernoulli,
+    def __init__(self,
+                #   interarrival_dist: stats.gamma, 
+    #              fuel_time_dist:  stats.gamma,
+    #              shop_time_dist: stats.gamma,
+    #              payment_time_dist: stats.gamma,
+    #             #  parking_preference_dist: stats.gamma,
+    #             #  shop_yes_no_dist: stats.bernoulli,
+                 alphas,
+                 betas,
                  ):
         
-        self.interarrival_dist = interarrival_dist
-        self.fuel_time_dist = fuel_time_dist
-        self.shop_time_dist = shop_time_dist
-        self.payment_time_dist = payment_time_dist
+        self.interarrival_dist = stats.gamma(a = alphas[0], scale = 1 / betas[0])
+        self.fuel_time_dist = stats.gamma(a = alphas[1], scale = 1 / betas[1])
+        self.shop_time_dist = stats.gamma(a = alphas[2], scale = 1 / betas[2])
+        self.payment_time_dist = stats.gamma(a = alphas[3], scale = 1 / betas[3])
+                                             
+        
+        # self.interarrival_dist = interarrival_dist
+        # self.fuel_time_dist = fuel_time_dist
+        # self.shop_time_dist = shop_time_dist
+        # self.payment_time_dist = payment_time_dist
         # self.parking_preference_dist = parking_preference_dist
         # self.shop_yes_no_dist = shop_yes_no_dist
 
         # total simulation duration is 960 minutes (i.e. 16 hours from 6 am to 10 pm)
-        # TODO: check whether the input data is in seconds or minutes 
-        self.max_time = 960 # in minutes 
+        # TODO: check whether the input data is in seconds or minutes 960 minutes and 57600 seconds
+        self.max_time = 57600 # in minutes 
         self.fes = FES()
         
         # queues
@@ -176,6 +185,9 @@ class Simulation:
         # temp_customer.fuel_time = self.fuel_time_dist.rvs()
         # temp_customer.shop_time = self.shop_time_dist.rvs()
         # temp_customer.payment_time = self.payment_time_dist.rvs()
+
+
+
         temp_customer.parking_preference = np.random.choice([Customer.NO_PREFERENCE, Customer.LEFT, Customer.RIGHT], 1,
                                                p=[0.828978622327791, 0.09501187648456057, 0.07600950118764846])
 
@@ -260,14 +272,27 @@ class Simulation:
             self.old_time = self.current_time
             self.current_time = event.time
             current_customer = event.customer
-            current_customer.system_entry_time = self.current_time
 
             # update the queue length of the entrance queue, payment queue and shop queue
-            self.queue_length_fuel_station.append((self.entry_queue.number_of_customers) * (self.current_time - self.old_time))
+
+            customer_at_fuel_station = 0
+            for pump in self.pump_stations:
+                if pump.status == Server.BUSY:
+                    customer_at_fuel_station += 1
+            
+            if self.cashier.status == Server.BUSY:
+                customer_at_cashier = 1
+            else:
+                customer_at_cashier = 0
+
+            self.queue_length_fuel_station.append((self.entry_queue.number_of_customers + customer_at_fuel_station) * (self.current_time - self.old_time))
             self.queue_length_shop.append((self.shop_queue.number_of_customers) * (self.current_time - self.old_time))
-            self.queue_length_payment.append((self.payment_queue.number_of_customers) * (self.current_time - self.old_time))
+            self.queue_length_payment.append((self.payment_queue.number_of_customers + customer_at_cashier) * (self.current_time - self.old_time))
 
             if event.type == Event.ARRIVAL: 
+
+                current_customer.system_entry_time = self.current_time
+
                 self.entry_queue.join_queue(current_customer)
 
                 # if (self.entry_queue.get_queue_status() == Queue.NOT_EMPTY):
@@ -344,7 +369,7 @@ class Simulation:
                 # implement logic
                 # cashier becomes idle, checks if there is someone waiting in the payment queue, if there is, they join the cashier, otherwise cashier remains idle
 
-                current_customer.payment_queue_time = self.current_time - current_customer.payment_queue_time
+                # current_customer.payment_queue_time = self.current_time - current_customer.payment_queue_time
 
                 #check if customer can leave
                 pump = current_customer.fuel_pump
@@ -419,6 +444,7 @@ class Simulation:
                 if self.payment_queue.get_queue_status() == Queue.NOT_EMPTY:
                     next_customer = self.payment_queue.customers_in_queue[0]
                     next_customer.payment_queue_time = self.current_time - next_customer.payment_queue_time
+                    next_customer.payment_queue_time = self.current_time - next_customer.payment_queue_time
                     self.cashier.customer_arrive(next_customer)
                     self.fes.add(Event(Event.PAYMENT_DEPARTURE, next_customer, self.current_time + self.payment_time_dist.rvs()))
                     self.payment_queue.leave_queue()
@@ -456,20 +482,35 @@ class Simulation:
         results.append(np.sum(self.queue_length_payment) / self.current_time)
 
         return results
+    
+    def simulation_no_shop(self):
+        return 0
+    
+    def simulation_four_lines_of_pumps(self):
+        return 0
 
 def main():
     
-    fuel_time_dist = scipy.stats.gamma(a = 3.7407418789843607, scale = 1 / 0.7739719530752498)
-    shop_time_dist = scipy.stats.gamma(a = 0.9896321424751771, scale = 1 / 0.8437679944913072)
-    service_time_payment_dist = scipy.stats.gamma(a = 64.16085452169962, scale = 1 / 85.58827329763147)
-    interarrival_dist = scipy.stats.gamma(a = 1.044611732553164, scale = 1 / 0.43845438113895135)
+    # fuel_time_dist = scipy.stats.gamma(a = 3.7407418789843607, scale = 1 / 0.7739719530752498)
+    # shop_time_dist = scipy.stats.gamma(a = 0.9896321424751771, scale = 1 / 0.8437679944913072)
+    # service_time_payment_dist = scipy.stats.gamma(a = 64.16085452169962, scale = 1 / 85.58827329763147)
+    # interarrival_dist = scipy.stats.gamma(a = 1.044611732553164, scale = 1 / 26.307262868337094)
+
+    # fuel_time_dist = scipy.stats.gamma(a = 3.740741878984356, scale = 1 / 0.014062799908188449)
+    # shop_time_dist = scipy.stats.gamma(a = 0.9896321424751765, scale = 1 / 0.014062799908188449)
+    # service_time_payment_dist = scipy.stats.gamma(a = 64.16085452170083, scale = 1 / 1.426471221627218)
+    # interarrival_dist = scipy.stats.gamma(a = 1.044611732553164, scale = 1 / 0.43845438113895135)
+
+    alphas = [3.740741878984356, 0.9896321424751765, 64.16085452170083, 1.044611732553164]
+    betas = [0.014062799908188449, 0.014062799908188449, 1.426471221627218, 0.43845438113895135]
 
     # parking_preference_dist = np.random.choice([Customer.NO_PREFERENCE, Customer.LEFT, Customer.RIGHT], 1,
     #                                            p=[0.828978622327791, 0.09501187648456057, 0.07600950118764846])
 
     # shop_yes_no_dist = np.random.choice([True, False], 1, p=[0.22327790973871733, 0.7767220902612827])
 
-    sim = Simulation(interarrival_dist, fuel_time_dist, shop_time_dist, service_time_payment_dist)
+    # sim = Simulation(interarrival_dist, fuel_time_dist, shop_time_dist, service_time_payment_dist)
+    sim = Simulation(alphas, betas)
 
     results = sim.base_simulation()
 
@@ -482,7 +523,6 @@ def main():
     print("Average queue length of the payment queue: ", results[5])
 
     # print(results)
-
 
 if __name__ == "__main__":
     main()
