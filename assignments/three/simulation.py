@@ -457,7 +457,8 @@ class Simulation:
                     next_customer.payment_queue_time = self.current_time - next_customer.payment_queue_time
                     self.cashier.customer_arrive(next_customer)
                     self.fes.add(
-                        Event(Event.PAYMENT_DEPARTURE, next_customer, self.current_time + self.payment_time_dist.rvs()))
+                        Event(Event.PAYMENT_DEPARTURE, next_customer, self.current_time + self.payment_time_dist.rvs())
+                    )
                     self.payment_queue.leave_queue(next_customer)
 
                 # else, cashier becomes idle
@@ -485,6 +486,7 @@ class Simulation:
                         self.entry_queue.customers_in_queue[0].fuel_pump = status
                         self.fes.add(Event(Event.FUEL_DEPARTURE, self.entry_queue.customers_in_queue[0],
                                            self.current_time + self.fuel_time_dist.rvs()))
+                        self.pump_stations[status].customer_arrive(self.entry_queue.customers_in_queue[0])
                         self.entry_queue.leave_queue(self.entry_queue.customers_in_queue[0])
 
         results = []
