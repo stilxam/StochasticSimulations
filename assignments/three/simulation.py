@@ -138,8 +138,9 @@ class Simulation:
         # self.shop_yes_no_dist = shop_yes_no_dist
 
         # total simulation duration is 960 minutes (i.e. 16 hours from 6 am to 10 pm)
-        # TODO: check whether the input data is in seconds or minutes 
-        self.max_time = 960 # in minutes 
+        # check whether the input data is in seconds or minutes
+        # Note, it is in seconds
+        self.max_time = 960 * 60 # in seconds
         self.fes = FES()
         
         # queues
