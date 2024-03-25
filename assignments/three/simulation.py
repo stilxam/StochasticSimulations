@@ -205,18 +205,18 @@ class Simulation:
         if self.pump_stations[1].status == Server.IDLE:
             if self.pump_stations[0].status == Server.IDLE:
                 # self.pump_stations[0].customer_arrive(customer)
-                return "F0"
+                return 0
             else:
                 # self.pump_stations[1].customer_arrive(customer)
-                return "F1"
+                return 1
         
         elif self.pump_stations[3].status == Server.IDLE:
             if self.pump_stations[2].status == Server.IDLE:
                 # self.pump_stations[2].customer_arrive(customer)
-                return "F2"
+                return 2
             else: 
                 # self.pump_stations[3].customer_arrive(customer)
-                return "F3"
+                return 3
         
         else:
             return -1 
@@ -227,10 +227,10 @@ class Simulation:
         if  self.pump_stations[3].status == Server.IDLE:
             if self.pump_stations[2].status == Server.IDLE:
                 # self.pump_stations[2].customer_arrive(customer)
-                return "F2"
+                return 2
             else: 
                 # self.pump_stations[3].customer_arrive(customer)
-                return "F3"
+                return 3
         
         else: 
             return -1 # cannot assign the customer to a pump
@@ -241,10 +241,10 @@ class Simulation:
         if  self.pump_stations[1].status == Server.IDLE:
             if self.pump_stations[0].status == Server.IDLE:
                 # self.pump_stations[0].customer_arrive(customer)
-                return "F0"
+                return 0
             else: 
                 # self.pump_stations[1].customer_arrive(customer)
-                return "F1"
+                return 1
         
         else: 
             return -1 # cannot assign the customer to a pump
@@ -318,10 +318,18 @@ class Simulation:
                 
                 if status != -1:
                     # update wating time of customer in entry queue
-                    self.entry_queue.customers_in_queue[0].entrance_queue_time = self.current_time - self.entry_queue.customers_in_queue[0].system_entry_time
+                    self.entry_queue.customers_in_queue[0].entrance_queue_time = (
+                            self.current_time - self.entry_queue.customers_in_queue[0].system_entry_time
+                    )
                     self.entry_queue.customers_in_queue[0].fuel_pump = status
-                    self.fes.add(Event(Event.FUEL_DEPARTURE, self.entry_queue.customers_in_queue[0], self.current_time + self.fuel_time_dist.rvs()))
-                    self.pump_stations[0].customer_arrive(current_customer)
+                    self.fes.add(
+                        Event(
+                            Event.FUEL_DEPARTURE,
+                            self.entry_queue.customers_in_queue[0],
+                            self.current_time + self.fuel_time_dist.rvs()
+                        )
+                    )
+                    self.pump_stations[status].customer_arrive(current_customer)
                     self.entry_queue.leave_queue()
             
                 # generate the next arrival 
@@ -382,7 +390,7 @@ class Simulation:
                 #check if customer can leave
                 pump = current_customer.fuel_pump
 
-                if pump == "F0":
+                if pump == 0:
                     current_customer.time_spent_in_system = self.current_time - current_customer.system_entry_time
                     self.pump_stations[0].customer_leave()
 
@@ -392,7 +400,7 @@ class Simulation:
 
 
                     for cust in self.waiting_to_leave.customers_in_queue:
-                        if cust.fuel_pump == "F1":
+                        if cust.fuel_pump == 1:
                             self.waiting_to_leave.leave_queue()
                             cust.time_spent_in_system = self.current_time - cust.system_entry_time
 
@@ -402,7 +410,7 @@ class Simulation:
 
                             self.pump_stations[1].customer_leave()
                 
-                elif pump == "F1":
+                elif pump == 1:
                     if self.pump_stations[0].status == Server.IDLE:
                         current_customer.time_spent_in_system = self.current_time - current_customer.system_entry_time
 
@@ -415,7 +423,7 @@ class Simulation:
                     else:
                         self.waiting_to_leave.join_queue(current_customer)
                 
-                elif pump == "F2":
+                elif pump == 2:
                     current_customer.time_spent_in_system = self.current_time - current_customer.system_entry_time
 
                     self.total_time_spent_in_system.append(current_customer.time_spent_in_system)
@@ -425,7 +433,7 @@ class Simulation:
                     self.pump_stations[2].customer_leave()
 
                     for cust in self.waiting_to_leave.customers_in_queue:
-                        if cust.fuel_pump == "F3":
+                        if cust.fuel_pump == 3:
                             self.waiting_to_leave.leave_queue()
                             cust.time_spent_in_system = self.current_time - cust.system_entry_time
 
@@ -435,7 +443,7 @@ class Simulation:
 
                             self.pump_stations[3].customer_leave()
                 
-                elif pump == "F3":
+                elif pump == 3:
                     if self.pump_stations[2].status == Server.IDLE:
                         current_customer.time_spent_in_system = self.current_time - current_customer.system_entry_time
 
