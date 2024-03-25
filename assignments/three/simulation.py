@@ -499,7 +499,7 @@ class Simulation:
         results["average_queue_length_shop"] = np.sum(self.area_queue_length_shop) / self.current_time
         results["average_queue_length_payment"] = np.sum(self.area_queue_length_payment) / self.current_time
 
-        results = pd.DataFrame(results, index=[self.max_time]).T
+        results = pd.DataFrame(results, index=[f"Results for Runtime: {self.max_time}"]).T
 
         # results = []
         # results.append(np.mean(self.waiting_time_entrance_queue))
@@ -548,8 +548,6 @@ def main():
     # print("Average queue length of the fuel station: ", results[3])
     # print("Average queue length of the shop: ", results[4])
     # print("Average queue length of the payment queue: ", results[5])
-
-
 
     # print(results)
     print(tabulate(results, headers='keys', tablefmt='pretty'))
