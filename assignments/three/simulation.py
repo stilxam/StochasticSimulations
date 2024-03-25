@@ -204,18 +204,18 @@ class Simulation:
         # check if there is a fuel pump is available
         if self.pump_stations[1].status == Server.IDLE:
             if self.pump_stations[0].status == Server.IDLE:
-                self.pump_stations[0].customer_arrive(customer)
+                # self.pump_stations[0].customer_arrive(customer)
                 return "F0"
             else:
-                self.pump_stations[1].customer_arrive(customer)
+                # self.pump_stations[1].customer_arrive(customer)
                 return "F1"
         
         elif self.pump_stations[3].status == Server.IDLE:
             if self.pump_stations[2].status == Server.IDLE:
-                self.pump_stations[2].customer_arrive(customer)
+                # self.pump_stations[2].customer_arrive(customer)
                 return "F2"
             else: 
-                self.pump_stations[3].customer_arrive(customer)
+                # self.pump_stations[3].customer_arrive(customer)
                 return "F3"
         
         else:
@@ -226,10 +226,10 @@ class Simulation:
         # check pumps 3 and 4
         if  self.pump_stations[3].status == Server.IDLE:
             if self.pump_stations[2].status == Server.IDLE:
-                self.pump_stations[2].customer_arrive(customer)
+                # self.pump_stations[2].customer_arrive(customer)
                 return "F2"
             else: 
-                self.pump_stations[3].customer_arrive(customer)
+                # self.pump_stations[3].customer_arrive(customer)
                 return "F3"
         
         else: 
@@ -240,10 +240,10 @@ class Simulation:
         # check pumps 1 and 2
         if  self.pump_stations[1].status == Server.IDLE:
             if self.pump_stations[0].status == Server.IDLE:
-                self.pump_stations[0].customer_arrive(customer)
+                # self.pump_stations[0].customer_arrive(customer)
                 return "F0"
             else: 
-                self.pump_stations[1].customer_arrive(customer)
+                # self.pump_stations[1].customer_arrive(customer)
                 return "F1"
         
         else: 
@@ -321,6 +321,7 @@ class Simulation:
                     self.entry_queue.customers_in_queue[0].entrance_queue_time = self.current_time - self.entry_queue.customers_in_queue[0].system_entry_time
                     self.entry_queue.customers_in_queue[0].fuel_pump = status
                     self.fes.add(Event(Event.FUEL_DEPARTURE, self.entry_queue.customers_in_queue[0], self.current_time + self.fuel_time_dist.rvs()))
+                    self.pump_stations[0].customer_arrive(current_customer)
                     self.entry_queue.leave_queue()
             
                 # generate the next arrival 
