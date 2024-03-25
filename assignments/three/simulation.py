@@ -91,9 +91,9 @@ class Queue:
         self.customers_in_queue.append(customer)
 
 
-    def leave_queue(self):
+    def leave_queue(self, customer: Customer):
         self.number_of_customers -= 1
-        self.customers_in_queue.pop(0)
+        self.customers_in_queue.remove(customer)
     
     def get_queue_status(self):
         return Queue.EMPTY if len(self.customers_in_queue) == 0 else Queue.NOT_EMPTY
@@ -330,7 +330,7 @@ class Simulation:
                         )
                     )
                     self.pump_stations[status].customer_arrive(current_customer)
-                    self.entry_queue.leave_queue()
+                    self.entry_queue.leave_queue(current_customer)
             
                 # generate the next arrival 
                 self.customer_id += 1
@@ -371,13 +371,13 @@ class Simulation:
                     current_customer.payment_queue_time = 0
                     self.cashier.customer_arrive(current_customer)
                     self.fes.add(Event(Event.PAYMENT_DEPARTURE, current_customer, self.current_time + self.payment_time_dist.rvs()))
-                    self.shop_queue.leave_queue()
+                    self.shop_queue.leave_queue(current_customer)
                     
                 else:
                     # otherwise, they join the payment queue
                     current_customer.payment_queue_time = self.current_time # save the time the customer joined the payment queue and used to calculate the time spent in the queue later
                     self.payment_queue.join_queue(current_customer)
-                    self.shop_queue.leave_queue()
+                    self.shop_queue.leave_queue(current_customer)
                     # self.pump_stations[pump].customer_leave()
 
             
@@ -401,7 +401,7 @@ class Simulation:
 
                     for cust in self.waiting_to_leave.customers_in_queue:
                         if cust.fuel_pump == 1:
-                            self.waiting_to_leave.leave_queue()
+                            self.waiting_to_leave.leave_queue(cust)
                             cust.time_spent_in_system = self.current_time - cust.system_entry_time
 
                             self.total_time_spent_in_system.append(cust.time_spent_in_system)
@@ -434,7 +434,7 @@ class Simulation:
 
                     for cust in self.waiting_to_leave.customers_in_queue:
                         if cust.fuel_pump == 3:
-                            self.waiting_to_leave.leave_queue()
+                            self.waiting_to_leave.leave_queue(cust)
                             cust.time_spent_in_system = self.current_time - cust.system_entry_time
 
                             self.total_time_spent_in_system.append(cust.time_spent_in_system)
@@ -463,7 +463,7 @@ class Simulation:
                     next_customer.payment_queue_time = self.current_time - next_customer.payment_queue_time
                     self.cashier.customer_arrive(next_customer)
                     self.fes.add(Event(Event.PAYMENT_DEPARTURE, next_customer, self.current_time + self.payment_time_dist.rvs()))
-                    self.payment_queue.leave_queue()
+                    self.payment_queue.leave_queue(current_customer)
 
                 # else, cashier becomes idle
                 elif self.payment_queue.get_queue_status() == Queue.EMPTY:
@@ -487,7 +487,7 @@ class Simulation:
                         self.entry_queue.customers_in_queue[0].entrance_queue_time = self.current_time - self.entry_queue.customers_in_queue[0].system_entry_time
                         self.entry_queue.customers_in_queue[0].fuel_pump = status
                         self.fes.add(Event(Event.FUEL_DEPARTURE, self.entry_queue.customers_in_queue[0], self.current_time + self.fuel_time_dist.rvs()))
-                        self.entry_queue.leave_queue()
+                        self.entry_queue.leave_queue(self.entry_queue.customers_in_queue[0])
     
         results = []
         results.append(np.mean(self.waiting_time_entrance_queue))
