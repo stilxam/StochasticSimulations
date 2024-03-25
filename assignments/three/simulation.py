@@ -1,6 +1,8 @@
 import numpy as np
+import pandas as pd
 import scipy
 from scipy import stats
+from tabulate import tabulate
 import heapq
 
 
@@ -489,14 +491,23 @@ class Simulation:
                         self.pump_stations[status].customer_arrive(self.entry_queue.customers_in_queue[0])
                         self.entry_queue.leave_queue(self.entry_queue.customers_in_queue[0])
 
-        results = []
-        results.append(np.mean(self.waiting_time_entrance_queue))
-        results.append(np.mean(self.waiting_time_payment_queue))
-        results.append(np.mean(self.total_time_spent_in_system))
-        results.append(np.sum(self.area_queue_length_fuel_station) / self.current_time)
-        results.append(np.sum(self.area_queue_length_shop) / self.current_time)
-        results.append(np.sum(self.area_queue_length_payment) / self.current_time)
+        results = {}
+        results["average_waiting_time_entrance_queue"] = np.mean(self.waiting_time_entrance_queue)
+        results["average_waiting_time_payment_queue"] = np.mean(self.waiting_time_payment_queue)
+        results["average_time_spent_in_system"] = np.mean(self.total_time_spent_in_system)
+        results["average_queue_length_fuel_station"] = np.sum(self.area_queue_length_fuel_station) / self.current_time
+        results["average_queue_length_shop"] = np.sum(self.area_queue_length_shop) / self.current_time
+        results["average_queue_length_payment"] = np.sum(self.area_queue_length_payment) / self.current_time
 
+        results = pd.DataFrame(results, index=[0]).T
+
+        # results = []
+        # results.append(np.mean(self.waiting_time_entrance_queue))
+        # results.append(np.mean(self.waiting_time_payment_queue))
+        # results.append(np.mean(self.total_time_spent_in_system))
+        # results.append(np.sum(self.area_queue_length_fuel_station) / self.current_time)
+        # results.append(np.sum(self.area_queue_length_shop) / self.current_time)
+        # results.append(np.sum(self.area_queue_length_payment) / self.current_time)
         return results
 
     def simulation_no_shop(self):
@@ -530,15 +541,18 @@ def main():
 
     results = sim.base_simulation()
 
-    print("--------------------Results-------------------")
-    print("Average waiting time in the entrance queue: ", results[0])
-    print("Average waiting time in the payment queue: ", results[1])
-    print("Average time spent in the system: ", results[2])
-    print("Average queue length of the fuel station: ", results[3])
-    print("Average queue length of the shop: ", results[4])
-    print("Average queue length of the payment queue: ", results[5])
+    # print("--------------------Results-------------------")
+    # print("Average waiting time in the entrance queue: ", results[0])
+    # print("Average waiting time in the payment queue: ", results[1])
+    # print("Average time spent in the system: ", results[2])
+    # print("Average queue length of the fuel station: ", results[3])
+    # print("Average queue length of the shop: ", results[4])
+    # print("Average queue length of the payment queue: ", results[5])
+
+
 
     # print(results)
+    print(tabulate(results, headers='keys', tablefmt='pretty'))
 
 
 if __name__ == "__main__":
