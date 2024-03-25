@@ -36,7 +36,7 @@ if __name__ == "__main__":
             ax[j, i].set_ylabel('Length of Queue at Server 2')
         # add a title to the whole figure
     fig.suptitle('Transition Matrix', fontsize=16)
-    fig.colorbar(ax[0,0].imshow(matrix[0,:10], cmap='viridis', interpolation='nearest'), ax=ax, orientation='horizontal')
+    fig.colorbar(ax[0,0].imshow(matrix[0, :10], cmap='viridis', interpolation='nearest'), ax=ax, orientation='horizontal')
     plt.show()
 
 
