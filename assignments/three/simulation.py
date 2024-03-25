@@ -173,10 +173,10 @@ class Simulation:
 
         # measurements
         self.waiting_time_entrance_queue = [] # waiting times at the fuel station
-        self.queue_length_fuel_station = [] # queue length of the entrance queue
-        self.queue_length_shop = [] # queue length of the shop queue
+        self.area_queue_length_fuel_station = [] # queue length of the entrance queue
+        self.area_queue_length_shop = [] # queue length of the shop queue
         self.waiting_time_payment_queue = [] # waiting times at the payment queue
-        self.queue_length_payment = [] # queue length of the payment queue
+        self.area_queue_length_payment = [] # queue length of the payment queue
         self.total_time_spent_in_system = [] # total time spent in the system
 
 
@@ -286,9 +286,15 @@ class Simulation:
             else:
                 customer_at_cashier = 0
 
-            self.queue_length_fuel_station.append((self.entry_queue.number_of_customers + customer_at_fuel_station) * (self.current_time - self.old_time))
-            self.queue_length_shop.append((self.shop_queue.number_of_customers) * (self.current_time - self.old_time))
-            self.queue_length_payment.append((self.payment_queue.number_of_customers + customer_at_cashier) * (self.current_time - self.old_time))
+            self.area_queue_length_fuel_station.append(
+                (self.entry_queue.number_of_customers + customer_at_fuel_station) * (self.current_time - self.old_time)
+            )
+            self.area_queue_length_shop.append(
+                self.shop_queue.number_of_customers * (self.current_time - self.old_time)
+            )
+            self.area_queue_length_payment.append(
+                (self.payment_queue.number_of_customers + customer_at_cashier) * (self.current_time - self.old_time)
+            )
 
             if event.type == Event.ARRIVAL: 
 
@@ -478,9 +484,9 @@ class Simulation:
         results.append(np.mean(self.waiting_time_entrance_queue))
         results.append(np.mean(self.waiting_time_payment_queue))
         results.append(np.mean(self.total_time_spent_in_system))
-        results.append(np.sum(self.queue_length_fuel_station) / self.current_time)
-        results.append(np.sum(self.queue_length_shop) / self.current_time)
-        results.append(np.sum(self.queue_length_payment) / self.current_time)
+        results.append(np.sum(self.area_queue_length_fuel_station) / self.current_time)
+        results.append(np.sum(self.area_queue_length_shop) / self.current_time)
+        results.append(np.sum(self.area_queue_length_payment) / self.current_time)
 
         return results
     
