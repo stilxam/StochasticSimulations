@@ -17,8 +17,8 @@ class Customer:
         self.system_entry_time = 0  # time the customer entered the system
   
         self.cust_id = cust_id  # customer id
-        self.payment_queue_time = 0  # time spent in payment queue
-        self.entrance_queue_time = 0  # time spent in entrance queue
+        self.payment_queue_time = 0  # entry time to the payment queue
+        self.entrance_queue_time = 0  # entry time to the entrance queue
         self.parking_preference = parking_preference
         self.wants_to_shop = shop_yes_no
         self.fuel_pump = None
@@ -169,7 +169,13 @@ class Simulation:
         temp_customer.parking_preference = np.random.choice([Customer.NO_PREFERENCE, Customer.LEFT, Customer.RIGHT],
                                                             p=[0.828978622327791, 0.09501187648456057, 0.07600950118764846])
         
+        # temp_customer.parking_preference = np.random.choice([Customer.NO_PREFERENCE, Customer.LEFT, Customer.RIGHT],
+        #                                             p=[0.7924050632911392, 0.10379746835443038, 0.10379746835443038])
+        
+        # aall = 0.20253164556962025 
         temp_customer.wants_to_shop = np.random.choice([True, False], p=[0.22327790973871733, 0.7767220902612827])
+        # temp_customer.wants_to_shop = np.random.choice([True, False], p=[aall, 1 - aall])
+
         return temp_customer
 
     def non_arrival_events_left(self):
@@ -244,11 +250,13 @@ class Simulation:
 
         self.fes.add(Event(Event.ARRIVAL, current_customer, arrival_time))
 
-        while self.current_time < self.max_time or self.non_arrival_events_left():
+        while len(self.fes.events) > 0:
+        # while self.current_time < self.max_time or self.non_arrival_events_left():
             event = self.fes.next()
 
             # customers that arrive after the closing time are not served (our policy)
             if self.current_time >= self.max_time and event.type == Event.ARRIVAL:
+                print("arrival after closing time -> customer not served")                        
                 continue
 
             print(repr(event))
@@ -295,11 +303,11 @@ class Simulation:
                     # add the time the customer spent in the entrance queue
                     self.waiting_time_entrance_queue.append(self.current_time - self.station_entry_queue.customers_in_queue[0].system_entry_time)
 
-                    # assign the customer to the fuel pump
-                    self.pump_stations[status].customer_arrive(self.station_entry_queue.customers_in_queue[0])
-
                     # store the pump id the customer is assigned to
                     self.station_entry_queue.customers_in_queue[0].fuel_pump = status
+
+                    # assign the customer to the fuel pump
+                    self.pump_stations[status].customer_arrive(self.station_entry_queue.customers_in_queue[0])
 
                     # generate the fuel departure event time
                     event_time = self.fuel_time_dist.rvs()
@@ -339,7 +347,10 @@ class Simulation:
                 elif not(current_customer.wants_to_shop):
                     # if cashier is idle, customer can go to pay straight away
                     if self.cashier.status == Server.IDLE:
-                        current_customer.payment_queue_time = 0 # customer did not have to wait in the payment queue
+
+                        # record the time the customer spent in the payment queue
+                        self.waiting_time_payment_queue.append(0)
+
                         self.cashier.customer_arrive(current_customer)
                         event_time = self.payment_time_dist.rvs()
                         self.testing[2].append(event_time)
@@ -472,11 +483,11 @@ class Simulation:
                         # add the time the customer spent in the entrance queue
                         self.waiting_time_entrance_queue.append(self.current_time - self.station_entry_queue.customers_in_queue[0].system_entry_time)
 
-                        # assign the customer to the fuel pump
-                        self.pump_stations[status].customer_arrive(self.station_entry_queue.customers_in_queue[0])
-
                         # store the pump id the customer is assigned to
                         self.station_entry_queue.customers_in_queue[0].fuel_pump = status
+
+                        # assign the customer to the fuel pump
+                        self.pump_stations[status].customer_arrive(self.station_entry_queue.customers_in_queue[0])
 
                         # generate the fuel departure event time
                         event_time = self.fuel_time_dist.rvs()
@@ -537,7 +548,10 @@ def main():
     # interarrival_dist = scipy.stats.gamma(a = 1.044611732553164, scale = 1 / 0.43845438113895135)
 
     alphas = [3.740741878984356, 0.9896321424751765, 64.16085452170083, 1.044611732553164]
-    betas = [0.014062799908188449, 0.014062799908188449, 1.426471221627218, 0.43845438113895135]
+    betas = [0.014062799908188449, 0.014062799908188449, 1.426471221627218, 0.007307573018982521]
+
+    # alphas = [3.9551541717858245, 1.05921370294806, 58.43434713289647, 0.8892740597600279] 
+    # betas = [0.014556317588821087, 0.013010455433109904, 1.2997841602373075, 0.006138604970207456]
 
     # parking_preference_dist = np.random.choice([Customer.NO_PREFERENCE, Customer.LEFT, Customer.RIGHT], 1,
     #                                            p=[0.828978622327791, 0.09501187648456057, 0.07600950118764846])
