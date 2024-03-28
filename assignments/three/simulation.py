@@ -11,7 +11,7 @@ class Customer:
     LEFT = 1
     RIGHT = 2
 
-    def __init__(self, cust_id,
+    def __init__(self, cust_id, arrival_time = 0, fuel_time = 0, shop_time = 0, payment_time = 0,
                  parking_preference=NO_PREFERENCE,
                  shop_yes_no=False):
         self.system_entry_time = 0  # time the customer entered the system
@@ -22,6 +22,12 @@ class Customer:
         self.parking_preference = parking_preference
         self.wants_to_shop = shop_yes_no
         self.fuel_pump = None
+
+        # for simulation with the actual dataset
+        self.arrival_time = arrival_time
+        self.fuel_time = fuel_time
+        self.shop_time = shop_time
+        self.payment_time = payment_time
 
 
 
@@ -150,7 +156,7 @@ class Simulation:
         self.cashier = Server("C1")
 
         # the fuel pump servers
-        self.pump_stations = [Server(f"F{i}") for i in range(4)]
+        self.pump_stations = [Server(i) for i in range(4)]
 
         # measurements
         self.waiting_time_entrance_queue = []  # waiting times at the fuel station
@@ -160,7 +166,6 @@ class Simulation:
         self.area_queue_length_payment = []  # queue length of the payment queue
         self.total_time_spent_in_system = []  # total time spent in the system
 
-        self.testing = [[],[],[],[]]
 
     # given a customer, it will set up the customer's data
     def set_customer_data(self, customer: Customer):
@@ -256,7 +261,7 @@ class Simulation:
 
             # customers that arrive after the closing time are not served (our policy)
             if self.current_time >= self.max_time and event.type == Event.ARRIVAL:
-                print("arrival after closing time -> customer not served")                        
+                print(f"Customer {event.customer.cust_id} arrived after closing time -> customer not served")                        
                 continue
 
             print(repr(event))
@@ -311,7 +316,6 @@ class Simulation:
 
                     # generate the fuel departure event time
                     event_time = self.fuel_time_dist.rvs()
-                    self.testing[0].append(event_time)
 
                     # customer was assigned to a fuel pump, hence we schedule a fuel departure event
                     self.fes.add(
@@ -330,7 +334,7 @@ class Simulation:
                 next_customer = Customer(self.customer_id)
                 next_customer = self.set_customer_data(next_customer)
                 next_arrival_time = self.interarrival_dist.rvs()
-                self.testing[3].append(next_arrival_time)
+
                 self.fes.add(Event(Event.ARRIVAL, next_customer, self.current_time + next_arrival_time))
                 
             #----------------------------------------------------------Handling the fuel departure event----------------------------------------------# 
@@ -339,7 +343,7 @@ class Simulation:
                     # add customer to the shop queue and create a shop departure event
                     self.shop_queue.join_queue(current_customer)
                     event_time = self.shop_time_dist.rvs()
-                    self.testing[1].append(event_time) # for testing purposes
+
                     self.fes.add(
                         Event(Event.SHOP_DEPARTURE, current_customer, self.current_time + event_time)
                     )
@@ -353,7 +357,7 @@ class Simulation:
 
                         self.cashier.customer_arrive(current_customer)
                         event_time = self.payment_time_dist.rvs()
-                        self.testing[2].append(event_time)
+  
                         # customer is with the cashier, hence we schedule a payment departure event
                         self.fes.add(
                             Event(Event.PAYMENT_DEPARTURE, current_customer, self.current_time + event_time)
@@ -361,7 +365,8 @@ class Simulation:
 
                     else:
                         # if cahsier is busy, the customer joins the payment queue
-                        current_customer.payment_queue_time = self.current_time  # save the time the customer joined the payment queue and used to calculate the time spent in the queue later
+                        # save the time the customer joined the payment queue and used to calculate the time spent in the queue later
+                        current_customer.payment_queue_time = self.current_time
                         self.payment_queue.join_queue(current_customer)
 
             # ----------------------------------------------------------Handling the shop departure event----------------------------------------------#
@@ -374,7 +379,7 @@ class Simulation:
 
                     self.cashier.customer_arrive(current_customer)
                     event_time = self.payment_time_dist.rvs()
-                    self.testing[2].append(event_time)
+
 
                     # schedule a payment departure event for the customer
                     self.fes.add(Event(Event.PAYMENT_DEPARTURE, current_customer, self.current_time + event_time))
@@ -452,7 +457,7 @@ class Simulation:
                     self.waiting_time_payment_queue.append(self.current_time - next_customer.payment_queue_time)
                     self.cashier.customer_arrive(next_customer)
                     event_time = self.payment_time_dist.rvs()
-                    self.testing[2].append(event_time)
+
                     self.fes.add(
                         Event(Event.PAYMENT_DEPARTURE, next_customer, self.current_time + event_time)
                     )
@@ -491,7 +496,6 @@ class Simulation:
 
                         # generate the fuel departure event time
                         event_time = self.fuel_time_dist.rvs()
-                        self.testing[0].append(event_time)
 
                         # customer was assigned to a fuel pump, hence we schedule a fuel departure event
                         self.fes.add(
@@ -506,31 +510,237 @@ class Simulation:
                         self.station_entry_queue.leave_queue(self.station_entry_queue.customers_in_queue[0])
 
         results = {}
-        results["average_waiting_time_entrance_queue"] = np.mean(self.waiting_time_entrance_queue)
-        results["average_waiting_time_payment_queue"] = np.mean(self.waiting_time_payment_queue)
-        results["average_time_spent_in_system"] = np.mean(self.total_time_spent_in_system)
-        results["average_queue_length_fuel_station"] = self.station_entry_queue.S / self.current_time
-        results["average_queue_length_shop"] = self.shop_queue.S / self.current_time
-        results["average_queue_length_payment"] = self.payment_queue.S / self.current_time
+        results["Waiting time Fuel station"] = np.mean(self.waiting_time_entrance_queue)
+        results["Queue length Fuel station"] = self.station_entry_queue.S / self.current_time
 
-        results["avg fuel time"] = np.mean(self.testing[0])
-        results["avg shop time"] = np.mean(self.testing[1])
-        results["avg payment time"] = np.mean(self.testing[2])
-        results["avg arrival time"] = np.mean(self.testing[3])
+        results["Queue length shop"] = self.shop_queue.S / self.current_time
+
+        results["Waiting time Payment queue"] = np.mean(self.waiting_time_payment_queue)
+        results["Queue length Payment queue"] = self.payment_queue.S / self.current_time
+
+        results["Total time spent in the system"] = np.mean(self.total_time_spent_in_system)
+
 
         results = pd.DataFrame(results, index=[f"Results for Runtime: {self.max_time}"]).T
 
-        # results = []
-        # results.append(np.mean(self.waiting_time_entrance_queue))
-        # results.append(np.mean(self.waiting_time_payment_queue))
-        # results.append(np.mean(self.total_time_spent_in_system))
-        # results.append(np.sum(self.area_queue_length_fuel_station) / self.current_time)
-        # results.append(np.sum(self.area_queue_length_shop) / self.current_time)
-        # results.append(np.sum(self.area_queue_length_payment) / self.current_time)
         return results
-
+    
+    #-----------------------------------------------------------Simulation without the shop------------------------------------------------------#
     def simulation_no_shop(self):
-        return 0
+
+        # each fuel pump has its own payment terminal.
+        # pump 0 has termnal 0, pump 1 has terminal 1 and so on
+        payment_terminals = [Server(i) for i in range(4)]
+
+        self.customer_id += 1
+        arrival_time = self.interarrival_dist.rvs()
+        current_customer = Customer(self.customer_id)
+        current_customer = self.set_customer_data(current_customer)
+        current_customer.system_entry_time = arrival_time
+
+        self.fes.add(Event(Event.ARRIVAL, current_customer, arrival_time))
+
+        while len(self.fes.events) > 0:
+        # while self.current_time < self.max_time or self.non_arrival_events_left():
+            event = self.fes.next()
+
+            # customers that arrive after the closing time are not served (our policy)
+            if self.current_time >= self.max_time and event.type == Event.ARRIVAL:
+                print(f"Customer {event.customer.cust_id} arrived after closing time -> customer not served")                        
+                continue
+
+            print(repr(event))
+            self.old_time = self.current_time
+            self.current_time = event.time
+
+            # retrieve the current customer
+            current_customer = event.customer
+
+            # update the queue length of the entrance queue
+            num_customers_at_fuel_pumps = 0
+            for pump in self.pump_stations:
+                if pump.status == Server.BUSY:
+                    num_customers_at_fuel_pumps += 1
+
+            self.station_entry_queue.S += (len(self.station_entry_queue) + num_customers_at_fuel_pumps) * (self.current_time - self.old_time)
+
+            if event.type == Event.ARRIVAL:
+                current_customer.system_entry_time = self.current_time
+                self.station_entry_queue.join_queue(current_customer)
+
+                # retrieve the preference of the first customer
+                temp_preference = self.station_entry_queue.customers_in_queue[0].parking_preference
+
+                # Try to assign the customer to a fuel pump
+                if temp_preference == Customer.NO_PREFERENCE:
+                    status = self.handle_no_preference()
+
+                elif temp_preference == Customer.LEFT:
+                    status = self.handle_left_preference()
+
+                elif temp_preference == Customer.RIGHT:
+                    status = self.handle_right_preference()
+
+                if status != -1:
+                    
+                    # add the time the customer spent in the entrance queue
+                    self.waiting_time_entrance_queue.append(self.current_time - self.station_entry_queue.customers_in_queue[0].system_entry_time)
+
+                    # store the pump id the customer is assigned to
+                    self.station_entry_queue.customers_in_queue[0].fuel_pump = status
+
+                    # assign the customer to the fuel pump
+                    self.pump_stations[status].customer_arrive(self.station_entry_queue.customers_in_queue[0])
+
+                    # generate the fuel departure event time
+                    event_time = self.fuel_time_dist.rvs()
+
+                    # customer was assigned to a fuel pump, hence we schedule a fuel departure event
+                    self.fes.add(
+                        Event(
+                            Event.FUEL_DEPARTURE,
+                            self.station_entry_queue.customers_in_queue[0],
+                            self.current_time + event_time
+                        )
+                    )
+
+                    # customer leaves the entrance queue
+                    self.station_entry_queue.leave_queue(self.station_entry_queue.customers_in_queue[0])
+
+                # generate the next arrival 
+                self.customer_id += 1
+                next_customer = Customer(self.customer_id)
+                next_customer = self.set_customer_data(next_customer)
+                next_arrival_time = self.interarrival_dist.rvs()
+
+                self.fes.add(Event(Event.ARRIVAL, next_customer, self.current_time + next_arrival_time))
+                
+            #----------------------------------------------------------Handling the fuel departure event----------------------------------------------# 
+            if event.type == Event.FUEL_DEPARTURE:
+                    # since each fuel pump has its own payment terminal, the customer can start paying straight away after fueling
+                    payment_terminals[current_customer.fuel_pump].customer_arrive(current_customer)
+                    event_time = self.payment_time_dist.rvs()
+
+                    # customer is at the payment terminal, hence we schedule a payment departure event
+                    self.fes.add(
+                        Event(Event.PAYMENT_DEPARTURE, current_customer, self.current_time + event_time)
+                    )
+            # ----------------------------------------------------------Handling the payment departure event----------------------------------------------#
+            if event.type == Event.PAYMENT_DEPARTURE:
+                
+                # retieve the fuel pump the customer was being served at
+                pump = current_customer.fuel_pump
+
+                # check if customer can leave the system or if they are blocked by another customer
+                if pump == 0:
+                    # customer can leave the system, hence we record the time they spent in the system
+                    self.total_time_spent_in_system.append(self.current_time - current_customer.system_entry_time)
+                    
+                    # fuel pump becomes idle
+                    self.pump_stations[0].customer_leave()
+                    payment_terminals[0].customer_leave()
+
+                    # check if any customers were blocked behind the current customer and allow them to leave if yes.
+                    for cust in self.waiting_to_leave.customers_in_queue:
+                        if cust.fuel_pump == 1:
+
+                            # record the time the customer spent in the system
+                            self.total_time_spent_in_system.append(self.current_time - cust.system_entry_time)
+                            # customer leaves the system
+                            self.waiting_to_leave.leave_queue(cust)
+                            # fuel pump becomes idle
+                            self.pump_stations[1].customer_leave()
+                            payment_terminals[1].customer_leave()
+
+                elif pump == 1:
+                    if self.pump_stations[0].status == Server.IDLE:
+                        self.total_time_spent_in_system.append(self.current_time - current_customer.system_entry_time)
+                        self.pump_stations[1].customer_leave()
+                        payment_terminals[1].customer_leave()
+
+                    else:
+                        # customer is blocked by the customer at pump 0, hence they join the waiting to leave queue
+                        self.waiting_to_leave.join_queue(current_customer)
+
+                elif pump == 2:
+                    self.total_time_spent_in_system.append(self.current_time - current_customer.system_entry_time)
+                    self.pump_stations[2].customer_leave()
+                    payment_terminals[2].customer_leave()
+
+                    # check if any customers were blocked behind the current customer and allow them to leave if yes.
+                    for cust in self.waiting_to_leave.customers_in_queue:
+                        if cust.fuel_pump == 3:
+
+                            # record the time the customer spent in the system
+                            self.total_time_spent_in_system.append(self.current_time - cust.system_entry_time)
+                            # customer leaves the system
+                            self.waiting_to_leave.leave_queue(cust)
+                            # fuel pump becomes idle
+                            self.pump_stations[3].customer_leave()
+                            payment_terminals[3].customer_leave()
+
+                elif pump == 3:
+                    if self.pump_stations[2].status == Server.IDLE:
+                        self.total_time_spent_in_system.append(self.current_time - current_customer.system_entry_time)
+                        self.pump_stations[3].customer_leave()
+                        payment_terminals[3].customer_leave()
+
+                    else:
+                        # customer is blocked by the customer at pump 2, hence they join the waiting to leave queue
+                        self.waiting_to_leave.join_queue(current_customer)
+
+
+                # check if there is a customer waiting in the entrance queue that can be assigned to a fuel pump
+                if self.station_entry_queue.get_queue_status() == Queue.NOT_EMPTY:
+                    # retrieve the preference of the first customer
+                    temp_preference = self.station_entry_queue.customers_in_queue[0].parking_preference
+
+                    # Try to assign the customer to a fuel pump
+                    if temp_preference == Customer.NO_PREFERENCE:
+                        status = self.handle_no_preference()
+
+                    elif temp_preference == Customer.LEFT:
+                        status = self.handle_left_preference()
+
+                    elif temp_preference == Customer.RIGHT:
+                        status = self.handle_right_preference()
+
+                    if status != -1:
+                        
+                        # add the time the customer spent in the entrance queue
+                        self.waiting_time_entrance_queue.append(self.current_time - self.station_entry_queue.customers_in_queue[0].system_entry_time)
+
+                        # store the pump id the customer is assigned to
+                        self.station_entry_queue.customers_in_queue[0].fuel_pump = status
+
+                        # assign the customer to the fuel pump
+                        self.pump_stations[status].customer_arrive(self.station_entry_queue.customers_in_queue[0])
+
+                        # generate the fuel departure event time
+                        event_time = self.fuel_time_dist.rvs()
+
+                        # customer was assigned to a fuel pump, hence we schedule a fuel departure event
+                        self.fes.add(
+                            Event(
+                                Event.FUEL_DEPARTURE,
+                                self.station_entry_queue.customers_in_queue[0],
+                                self.current_time + event_time
+                            )
+                        )
+
+                        # customer leaves the entrance queue
+                        self.station_entry_queue.leave_queue(self.station_entry_queue.customers_in_queue[0])
+
+        results = {}
+        results["Waiting time Fuel station"] = np.mean(self.waiting_time_entrance_queue)
+        results["Queue length Fuel station"] = self.station_entry_queue.S / self.current_time
+
+        results["Total time spent in the system"] = np.mean(self.total_time_spent_in_system)
+
+
+        results = pd.DataFrame(results, index=[f"Results for Runtime: {self.max_time}"]).T
+
+        return results
 
     def simulation_four_lines_of_pumps(self):
         return 0
@@ -559,20 +769,19 @@ def main():
     # shop_yes_no_dist = np.random.choice([True, False], 1, p=[0.22327790973871733, 0.7767220902612827])
 
     # sim = Simulation(interarrival_dist, fuel_time_dist, shop_time_dist, service_time_payment_dist)
-    sim = Simulation(alphas, betas)
 
-    results = sim.base_simulation()
+    # set the seed for reproducibility
+    np.random.seed(420420)
 
-    # print("--------------------Results-------------------")
-    # print("Average waiting time in the entrance queue: ", results[0])
-    # print("Average waiting time in the payment queue: ", results[1])
-    # print("Average time spent in the system: ", results[2])
-    # print("Average queue length of the fuel station: ", results[3])
-    # print("Average queue length of the shop: ", results[4])
-    # print("Average queue length of the payment queue: ", results[5])
+    # sim = Simulation(alphas, betas)
+    # results = sim.base_simulation()
 
-    # print(results)
-    print(tabulate(results, headers='keys', tablefmt='pretty'))
+    # print(tabulate(results, headers='keys', tablefmt='pretty'))
+
+    sim_scenario_2 = Simulation(alphas, betas)
+    results2 = sim_scenario_2.simulation_no_shop()
+
+    print(tabulate(results2, headers='keys', tablefmt='pretty'))
 
 
 if __name__ == "__main__":
