@@ -30,8 +30,6 @@ class Customer:
         self.shop_time = shop_time
         self.payment_time = payment_time
 
-
-
 class FES:
 
     def __init__(self):
@@ -56,7 +54,6 @@ class FES:
             s += f'{e}\n'
         return s
 
-
 class Event:
     ARRIVAL = 0  # constant for arrival type
     FUEL_DEPARTURE = 1  # constant for fuel departure type
@@ -74,7 +71,6 @@ class Event:
     def __repr__(self):
         s = ("Arrival", "Fuel Departure", "Shop Departure", "Payment Departure")
         return f"customer {self.customer.cust_id} has event type {s[self.type]} at time {self.time}"
-
 
 class Queue:
     # type of queue status
@@ -97,7 +93,6 @@ class Queue:
     def __len__(self):
         return len(self.customers_in_queue)
 
-
 class Server:
     IDLE = 0
     BUSY = 1
@@ -118,57 +113,49 @@ class Server:
         self.status = Server.IDLE
         self.current_customer = None
 
-
 class Simulation:
 
     def __init__(self,
                  alphas,
                  betas,
                  ):
+        
+        self.alphas = alphas
+        self.betas = betas
+        self.setup_simulation()
 
+    def setup_simulation(self):
+        # Initialize distributions
+        self.fuel_time_dist = stats.gamma(a=self.alphas[0], scale=1 / self.betas[0])
+        self.shop_time_dist = stats.gamma(a=self.alphas[1], scale=1 / self.betas[1])
+        self.payment_time_dist = stats.gamma(a=self.alphas[2], scale=1 / self.betas[2])
+        self.interarrival_dist = stats.gamma(a=self.alphas[3], scale=1 / self.betas[3])
 
-        self.fuel_time_dist = stats.gamma(a=alphas[0], scale=1 / betas[0])
-        self.shop_time_dist = stats.gamma(a=alphas[1], scale=1 / betas[1])
-        self.payment_time_dist = stats.gamma(a=alphas[2], scale=1 / betas[2])
-        self.interarrival_dist = stats.gamma(a=alphas[3], scale=1 / betas[3])
-
-        # total simulation duration is 960 minutes (i.e. 16 hours from 6 am to 10 pm)
-        # check whether the input data is in seconds or minutes
-        # Note, it is in seconds
-        self.max_time = 960 * 60  # in seconds
-        self.fes = FES()
-
-        # queues
+        # Reset simulation time and queues
+        self.max_time = 960 * 60  # 16 hours in seconds
+        self.fes = FES()  # Assuming FES is some form of future event scheduler
         self.station_entry_queue = Queue()
         self.shop_queue = Queue()
         self.payment_queue = Queue()
-
-        # queue for customers waiting to leave because they are blocked by another customer
         self.waiting_to_leave = Queue()
 
-        # customer id
+        # Reset counters and measurements
         self.customer_id = 0
-
-        # system time
         self.old_time = 0
         self.current_time = 0
-
         self.number_of_customers_servered = 0
 
-        # the cashier server
+        # Initialize servers
         self.cashier = Server("C1")
-
-        # the fuel pump servers
         self.pump_stations = [Server(i) for i in range(4)]
 
-        # measurements
-        self.waiting_time_entrance_queue = []  # waiting times at the fuel station
-        self.area_queue_length_fuel_station = []  # queue length of the entrance queue
-        self.area_queue_length_shop = []  # queue length of the shop queue
-        self.waiting_time_payment_queue = []  # waiting times at the payment queue
-        self.area_queue_length_payment = []  # queue length of the payment queue
-        self.total_time_spent_in_system = []  # total time spent in the system
-
+        # Reset statistics
+        self.waiting_time_entrance_queue = []
+        self.area_queue_length_fuel_station = []
+        self.area_queue_length_shop = []
+        self.waiting_time_payment_queue = []
+        self.area_queue_length_payment = []
+        self.total_time_spent_in_system = []
 
     # given a customer, it will set up the customer's data
     def set_customer_data(self, customer: Customer):
@@ -177,20 +164,8 @@ class Simulation:
         temp_customer.parking_preference = np.random.choice([Customer.NO_PREFERENCE, Customer.LEFT, Customer.RIGHT],
                                                             p=[0.828978622327791, 0.09501187648456057, 0.07600950118764846])
         
-        # temp_customer.parking_preference = np.random.choice([Customer.NO_PREFERENCE, Customer.LEFT, Customer.RIGHT],
-        #                                             p=[0.7924050632911392, 0.10379746835443038, 0.10379746835443038])
-        
-        # aall = 0.20253164556962025 
         temp_customer.wants_to_shop = np.random.choice([True, False], p=[0.22327790973871733, 0.7767220902612827])
-        # temp_customer.wants_to_shop = np.random.choice([True, False], p=[aall, 1 - aall])
-
         return temp_customer
-
-    # def non_arrival_events_left(self):
-    #     for event in self.fes.events:
-    #         if event.type != Event.ARRIVAL:
-    #             return True
-    #     return False
 
     def handle_no_preference(self):
 
@@ -279,7 +254,7 @@ class Simulation:
             else:
                 return -1
 
-    #-------------------------------------------------------------Base simulation (with fitted distributions)------------------------------------------#
+    #-----------------------------------------Base simulation (with fitted distributions)------------------------------------------#
     def base_simulation_fitted(self):
 
         self.customer_id += 1
@@ -291,14 +266,15 @@ class Simulation:
         self.fes.add(Event(Event.ARRIVAL, current_customer, arrival_time))
 
         while len(self.fes.events) > 0:
-        # while self.current_time < self.max_time or self.non_arrival_events_left():
             event = self.fes.next()
 
             # customers that arrive after the closing time are not served (our policy)
             if self.current_time >= self.max_time and event.type == Event.ARRIVAL:
+                # use the following print line only for testing purposes
                 # print(f"Customer {event.customer.cust_id} arrived after closing time -> customer not served")                        
                 continue
 
+            # use the following print line only for testing purposes
             # print(repr(event))
             self.old_time = self.current_time
             self.current_time = event.time
@@ -425,7 +401,8 @@ class Simulation:
 
                 else:
                     # if cahsier is busy, the customer joins the payment queue
-                    current_customer.payment_queue_time = self.current_time  # save the time the customer joined the payment queue and used to calculate the time spent in the queue later
+                    # save the time the customer joined the payment queue and used to calculate the time spent in the queue later
+                    current_customer.payment_queue_time = self.current_time
                     self.payment_queue.join_queue(current_customer)
                     self.shop_queue.leave_queue(current_customer)
 
@@ -558,9 +535,6 @@ class Simulation:
 
         results["Number of customers served"] = self.number_of_customers_servered
 
-
-        results = pd.DataFrame(results, index=[f"Results for Runtime: {self.max_time}"]).T
-
         return results
 
     #-----------------------------------------Base simulation (with actual dataset)------------------------------------------#
@@ -592,9 +566,11 @@ class Simulation:
 
             # customers that arrive after the closing time are not served (our policy)
             if self.current_time >= self.max_time and event.type == Event.ARRIVAL:
+                # use the following print line only for testing purposes
                 # print(f"Customer {event.customer.cust_id} arrived after closing time -> customer not served")                        
                 continue
-
+            
+            # use the following print line only for testing purposes
             # print(repr(event))
             self.old_time = self.current_time
             self.current_time = event.time
@@ -832,12 +808,9 @@ class Simulation:
 
         results["Total time spent in the system"] = np.mean(self.total_time_spent_in_system)
 
-
-        results = pd.DataFrame(results, index=[f"Results for Runtime: {self.max_time}"]).T
-
         return results
 
-    #-----------------------------------------------------------Simulation without the shop------------------------------------------------------#
+    #-----------------------------------------Simulation without the shop------------------------------------------------------#
     def simulation_no_shop(self):
 
         # each fuel pump has its own payment terminal.
@@ -858,9 +831,11 @@ class Simulation:
 
             # customers that arrive after the closing time are not served (our policy)
             if self.current_time >= self.max_time and event.type == Event.ARRIVAL:
+                # use the following print line only for testing purposes
                 # print(f"Customer {event.customer.cust_id} arrived after closing time -> customer not served")                        
                 continue
 
+            # use the following print line only for testing purposes
             # print(repr(event))
             self.old_time = self.current_time
             self.current_time = event.time
@@ -1051,12 +1026,9 @@ class Simulation:
         results["Total time spent in the system"] = np.mean(self.total_time_spent_in_system)
         results["Number of customers served"] = self.number_of_customers_servered
 
-
-        results = pd.DataFrame(results, index=[f"Results for Runtime: {self.max_time}"]).T
-
         return results
     
-    # -----------------------------------------------------------Simulation with four lines of pumps------------------------------------------------------#
+    # ----------------------------------------Simulation with four lines of pumps------------------------------------------------------#
     def simulation_four_lines_of_pumps(self):
 
         self.customer_id += 1
@@ -1073,9 +1045,11 @@ class Simulation:
 
             # customers that arrive after the closing time are not served (our policy)
             if self.current_time >= self.max_time and event.type == Event.ARRIVAL:
+                # use the following print line only for testing purposes
                 # print(f"Customer {event.customer.cust_id} arrived after closing time -> customer not served")                        
                 continue
 
+            # use the following print line only for testing purposes
             # print(repr(event))
             self.old_time = self.current_time
             self.current_time = event.time
@@ -1195,7 +1169,7 @@ class Simulation:
 
                 else:
                     # if cahsier is busy, the customer joins the payment queue
-                    current_customer.payment_queue_time = self.current_time  # save the time the customer joined the payment queue and used to calculate the time spent in the queue later
+                    current_customer.payment_queue_time = self.current_time
                     self.payment_queue.join_queue(current_customer)
                     self.shop_queue.leave_queue(current_customer)
 
@@ -1270,11 +1244,7 @@ class Simulation:
         results["Total time spent in the system"] = np.mean(self.total_time_spent_in_system)
         results["Number of customers served"] = self.number_of_customers_servered
 
-
-        results = pd.DataFrame(results, index=[f"Results for Runtime: {self.max_time}"]).T
-
         return results
-
 
 def confidence_interval(results, confidence=0.95):
     results = np.array(results)
@@ -1286,16 +1256,9 @@ def confidence_interval(results, confidence=0.95):
 
     return low, high
 
-def main():
-    # fuel_time_dist = scipy.stats.gamma(a = 3.7407418789843607, scale = 1 / 0.7739719530752498)
-    # shop_time_dist = scipy.stats.gamma(a = 0.9896321424751771, scale = 1 / 0.8437679944913072)
-    # service_time_payment_dist = scipy.stats.gamma(a = 64.16085452169962, scale = 1 / 85.58827329763147)
-    # interarrival_dist = scipy.stats.gamma(a = 1.044611732553164, scale = 1 / 26.307262868337094)
 
-    # fuel_time_dist = scipy.stats.gamma(a = 3.740741878984356, scale = 1 / 0.014062799908188449)
-    # shop_time_dist = scipy.stats.gamma(a = 0.9896321424751765, scale = 1 / 0.014062799908188449)
-    # service_time_payment_dist = scipy.stats.gamma(a = 64.16085452170083, scale = 1 / 1.426471221627218)
-    # interarrival_dist = scipy.stats.gamma(a = 1.044611732553164, scale = 1 / 0.43845438113895135)
+#---------------------------------------------Main function------------------------------------------------------#
+def main():
 
     # seed for reproducibility
     np.random.seed(420420)
@@ -1304,66 +1267,49 @@ def main():
     alphas = [3.740741878984356, 0.9896321424751765, 64.16085452170083, 1.044611732553164]
     betas = [0.014062799908188449, 0.014062799908188449, 1.426471221627218, 0.007307573018982521]
 
-    n_runs = 5
+    n_runs = 1000
 
     # Perform n_run simulations
     sim_names = ["Base simulation fitted distributions", "Simulation without the shop", "Simulation with four lines of pumps"]
 
-    for sim_name in range(3):
+    sim = Simulation(alphas, betas)
+    
+    for sim_name in range(1):
 
         simulation_results = [[] for i in range(n_runs)]
 
         if sim_name == 0:
             for i in range(n_runs):
-                sim = Simulation(alphas, betas)
+                # sim = Simulation(alphas, betas)
                 simulation_results[i] = (sim.base_simulation_fitted())
-                # print (f"Simulation {i} done")
+                sim.setup_simulation()
+                print (f"Simulation {i} done")
         
         elif sim_name == 1:
             for i in range(n_runs):
-                sim = Simulation(alphas, betas)
+                # sim = Simulation(alphas, betas)
                 simulation_results[i] = (sim.simulation_no_shop())
+                sim.setup_simulation()
                 # print (f"Simulation {i} done")
         
         elif sim_name == 2:
             for i in range(n_runs):
-                sim = Simulation(alphas, betas)
+                # sim = Simulation(alphas, betas)
                 simulation_results[i] = (sim.simulation_four_lines_of_pumps())
+                sim.setup_simulation()
                 # print (f"Simulation {i} done")
 
         print(f"\n-------------------Results for {sim_names[sim_name]}-------------------")
-        column_names = simulation_results[0].columns
+        # retreive the keys of the dictionary
+        keys = list(simulation_results[0].keys())
+        simulation_results = [pd.DataFrame(simulation_results[i], index=[f"Results for Runtime: {i}"]).T for i in range(n_runs)]
         simulation_results= np.array(simulation_results)
         mean = simulation_results.mean(axis=0)
 
         lower_bound, upper_bound = confidence_interval(simulation_results)
         for i in range(len(mean)):
-            print(f"{mean[i]} [{lower_bound[i]}, {upper_bound[i]}]")
-
-
-    #--------------------------------------------------------------------------#
-    # simulation_results_no_shop = [[] for i in range(1000)]
-    # for i in range(1000):
-    #     sim = Simulation(alphas, betas)
-    #     simulation_results_no_shop[i] = (sim.simulation_no_shop())
-    
-    # simulation_results_four_lines = [[] for i in range(1000)]
-    # for i in range(1000):
-    #     sim = Simulation(alphas, betas)
-    #     results[i] = (sim.simulation_four_lines_of_pumps())
-    
-    # Calculate the confidence interval for each simulation
-
-
-    # alphas = [3.9551541717858245, 1.05921370294806, 58.43434713289647, 0.8892740597600279] 
-    # betas = [0.014556317588821087, 0.013010455433109904, 1.2997841602373075, 0.006138604970207456]
-
-    # parking_preference_dist = np.random.choice([Customer.NO_PREFERENCE, Customer.LEFT, Customer.RIGHT], 1,
-    #                                            p=[0.828978622327791, 0.09501187648456057, 0.07600950118764846])
-
-    # shop_yes_no_dist = np.random.choice([True, False], 1, p=[0.22327790973871733, 0.7767220902612827])
-
-    # sim = Simulation(interarrival_dist, fuel_time_dist, shop_time_dist, service_time_payment_dist)
+            # print(f"{mean[i]} [{lower_bound[i]}, {upper_bound[i]}]")
+            print(f"{keys[i]}: {mean[i][0]} [{lower_bound[i][0]}, {upper_bound[i][0]}]")
 
     # print("Base simulation")
     # sim_basic = Simulation(alphas, betas)
