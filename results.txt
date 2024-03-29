@@ -1,0 +1,42 @@
+-------------------Simulation setup-------------------
+Number of runs: 1000
+Seed: 420420
+Alpha values: [3.740741878984356, 0.9896321424751765, 64.16085452170083, 1.044611732553164]
+Beta values: [0.014062799908188449, 0.014062799908188449, 1.426471221627218, 0.007307573018982521]
+Mu value: 45.6603325415677
+
+-------------------Results for Base simulation with empirical data (benchmark)-------------------
+Waiting time Fuel station: 1687.2252304038007
+Queue length Fuel station: 13.73101481982077
+Queue length shop: 0.1043862716856364
+Waiting time Payment queue: 5.944273159144888
+Queue length Payment queue: 0.34283416728206956
+Total time spent in the system: 2066.840686460808
+Number of customers served: 420 
+
+-------------------Results for Base simulation fitted distributions-------------------
+Waiting time Fuel station: 640.6941150438114 [615.1117958086566, 666.2764342789662]
+Queue length Fuel station: 6.862115889103209 [6.67642848147814, 7.047803296728278]
+Queue length shop: 0.10740189981095385 [0.10642003443025339, 0.10838376519165432]
+Waiting time Payment queue: 6.237130356739547 [6.186562175290698, 6.287698538188396]
+Queue length Payment queue: 0.3550618154016291 [0.35387935867636383, 0.3562442721268944]
+Total time spent in the system: 996.4785155616557 [970.70940466474, 1022.2476264585715]
+Number of customers served: 404.012 [402.78924421566785, 405.23475578433215]
+
+
+-------------------Results for Simulation without the shop-------------------
+Waiting time Fuel station: 359.65439621858303 [345.4714655490737, 373.8373268880924]
+Queue length Fuel station: 4.797313690069286 [4.687600010618212, 4.90702736952036]
+Total time spent in the system: 690.8490255020417 [676.4766604319254, 705.221390572158]
+Number of customers served: 402.855 [401.62517897932145, 404.0848210206786]
+
+
+-------------------Results for Simulation with four lines of pumps-------------------
+Waiting time Fuel station: 53.26615450880753 [52.022340566141736, 54.50996845147333]
+Queue length Fuel station: 2.704999218416426 [2.690100933852443, 2.7198975029804093]
+Queue length shop: 0.10915732384283303 [0.10812654635406187, 0.11018810133160419]
+Waiting time Payment queue: 7.8075748633549855 [7.750469848332172, 7.864679878377799]
+Queue length Payment queue: 0.3720878628400101 [0.37080549984633915, 0.37337022583368107]
+Total time spent in the system: 388.4287421777548 [387.0010195271371, 389.85646482837257]
+Number of customers served: 403.378 [402.20731401883677, 404.5486859811632]
+

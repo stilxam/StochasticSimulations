@@ -117,19 +117,22 @@ class Simulation:
 
     def __init__(self,
                  alphas,
-                 betas,
+                 betas, mu
                  ):
         
         self.alphas = alphas
         self.betas = betas
+        self.poisson_mean = mu
         self.setup_simulation()
 
     def setup_simulation(self):
         # Initialize distributions
         self.fuel_time_dist = stats.gamma(a=self.alphas[0], scale=1 / self.betas[0])
         self.shop_time_dist = stats.gamma(a=self.alphas[1], scale=1 / self.betas[1])
-        self.payment_time_dist = stats.gamma(a=self.alphas[2], scale=1 / self.betas[2])
+        # self.payment_time_dist = stats.gamma(a=self.alphas[2], scale=1 / self.betas[2])
         self.interarrival_dist = stats.gamma(a=self.alphas[3], scale=1 / self.betas[3])
+
+        self.payment_time_dist = stats.poisson(mu=self.poisson_mean)
 
         # Reset simulation time and queues
         self.max_time = 960 * 60  # 16 hours in seconds
@@ -538,7 +541,7 @@ class Simulation:
         return results
 
     #-----------------------------------------Base simulation (with actual dataset)------------------------------------------#
-    def base_simulation_impreical_data(self):
+    def base_simulation_impirical_data(self):
 
         # Loads the data
         data = pd.read_excel("assignments/three/gasstationdata33.xlsx")
@@ -1267,49 +1270,99 @@ def main():
     alphas = [3.740741878984356, 0.9896321424751765, 64.16085452170083, 1.044611732553164]
     betas = [0.014062799908188449, 0.014062799908188449, 1.426471221627218, 0.007307573018982521]
 
+    # for poission distribution of service time payment
+    mu = 45.6603325415677
+
     n_runs = 1000
 
     # Perform n_run simulations
-    sim_names = ["Base simulation fitted distributions", "Simulation without the shop", "Simulation with four lines of pumps"]
+    sim_names = ["Base simulation with empirical data (benchmark)" ,"Base simulation fitted distributions", "Simulation without the shop", "Simulation with four lines of pumps"]
 
-    sim = Simulation(alphas, betas)
+    sim = Simulation(alphas, betas, mu = mu)
+
+    # Clear the results file
+    with open('results.txt', 'w') as f:
+        f.write("-------------------Simulation setup-------------------\n")
+        f.write(f"Number of runs: {n_runs}\n")
+        f.write(f"Seed: 420420\n")
+        f.write(f"Alpha values: {alphas}\n")
+        f.write(f"Beta values: {betas}\n")
+        f.write(f"Mu value: {mu}\n")
     
-    for sim_name in range(1):
+    for sim_name in range(4):
 
         simulation_results = [[] for i in range(n_runs)]
 
         if sim_name == 0:
+            print("Base simulation with empirical data (benchmark)")
+            benchmark_sim_result = sim.base_simulation_impirical_data()
+            sim.setup_simulation()
+
+        if sim_name == 1:
+            print("Base simulation fitted distributions")
             for i in range(n_runs):
-                # sim = Simulation(alphas, betas)
                 simulation_results[i] = (sim.base_simulation_fitted())
                 sim.setup_simulation()
-                print (f"Simulation {i} done")
-        
-        elif sim_name == 1:
-            for i in range(n_runs):
-                # sim = Simulation(alphas, betas)
-                simulation_results[i] = (sim.simulation_no_shop())
-                sim.setup_simulation()
-                # print (f"Simulation {i} done")
+                print (f"Base Simulation {i} done")
         
         elif sim_name == 2:
+            print("Simulation without the shop")
             for i in range(n_runs):
-                # sim = Simulation(alphas, betas)
+                simulation_results[i] = (sim.simulation_no_shop())
+                sim.setup_simulation()
+                print (f"No shop Simulation {i} done")
+        
+        elif sim_name == 3:
+            print("Simulation with four lines of pumps")
+            for i in range(n_runs):
                 simulation_results[i] = (sim.simulation_four_lines_of_pumps())
                 sim.setup_simulation()
-                # print (f"Simulation {i} done")
+                print (f"Four line Simulation {i} done")
 
-        print(f"\n-------------------Results for {sim_names[sim_name]}-------------------")
-        # retreive the keys of the dictionary
-        keys = list(simulation_results[0].keys())
-        simulation_results = [pd.DataFrame(simulation_results[i], index=[f"Results for Runtime: {i}"]).T for i in range(n_runs)]
-        simulation_results= np.array(simulation_results)
-        mean = simulation_results.mean(axis=0)
+        # print(f"\n-------------------Results for {sim_names[sim_name]}-------------------")
+        # # retreive the keys of the dictionary
+        # keys = list(simulation_results[0].keys())
+        # simulation_results = [pd.DataFrame(simulation_results[i], index=[f"Results for Runtime: {i}"]).T for i in range(n_runs)]
+        # simulation_results= np.array(simulation_results)
+        # mean = simulation_results.mean(axis=0)
 
-        lower_bound, upper_bound = confidence_interval(simulation_results)
-        for i in range(len(mean)):
-            # print(f"{mean[i]} [{lower_bound[i]}, {upper_bound[i]}]")
-            print(f"{keys[i]}: {mean[i][0]} [{lower_bound[i][0]}, {upper_bound[i][0]}]")
+        # lower_bound, upper_bound = confidence_interval(simulation_results)
+        # for i in range(len(mean)):
+        #     # print(f"{mean[i]} [{lower_bound[i]}, {upper_bound[i]}]")
+        #     print(f"{keys[i]}: {mean[i][0]} [{lower_bound[i][0]}, {upper_bound[i][0]}]")
+                
+        if sim_name == 0:
+            with open('results.txt', 'a') as f:
+                f.write(f"\n-------------------Results for {sim_names[sim_name]}-------------------\n")
+                line = f"Waiting time Fuel station: {benchmark_sim_result["Waiting time Fuel station"]}\n"
+                f.write(line)
+                line = f"Queue length Fuel station: {benchmark_sim_result["Queue length Fuel station"]}\n"
+                f.write(line)
+                line = f"Queue length shop: {benchmark_sim_result["Queue length shop"]}\n"
+                f.write(line)
+                line = f"Waiting time Payment queue: {benchmark_sim_result["Waiting time Payment queue"]}\n"
+                f.write(line)
+                line = f"Queue length Payment queue: {benchmark_sim_result["Queue length Payment queue"]}\n"
+                f.write(line)
+                line = f"Total time spent in the system: {benchmark_sim_result["Total time spent in the system"]}\n"
+                f.write(line)
+                line = f"Number of customers served: 420 \n"
+                f.write(line)
+
+        else:
+            with open('results.txt', 'a') as f:
+                f.write(f"\n-------------------Results for {sim_names[sim_name]}-------------------\n")
+                keys = list(simulation_results[0].keys())
+                simulation_results = [pd.DataFrame(simulation_results[i], index=[f"Results for Runtime: {i}"]).T for i in range(n_runs)]
+                simulation_results= np.array(simulation_results)
+                mean = simulation_results.mean(axis=0)
+
+                lower_bound, upper_bound = confidence_interval(simulation_results)
+                for i in range(len(mean)):
+                    result_line = f"{keys[i]}: {mean[i][0]} [{lower_bound[i][0]}, {upper_bound[i][0]}]\n"
+                    f.write(result_line)
+                
+                f.write("\n")
 
     # print("Base simulation")
     # sim_basic = Simulation(alphas, betas)
