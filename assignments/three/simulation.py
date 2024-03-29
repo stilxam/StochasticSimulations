@@ -153,6 +153,8 @@ class Simulation:
         self.old_time = 0
         self.current_time = 0
 
+        self.number_of_customers_servered = 0
+
         # the cashier server
         self.cashier = Server("C1")
 
@@ -294,7 +296,7 @@ class Simulation:
 
             # customers that arrive after the closing time are not served (our policy)
             if self.current_time >= self.max_time and event.type == Event.ARRIVAL:
-                print(f"Customer {event.customer.cust_id} arrived after closing time -> customer not served")                        
+                # print(f"Customer {event.customer.cust_id} arrived after closing time -> customer not served")                        
                 continue
 
             # print(repr(event))
@@ -320,6 +322,7 @@ class Simulation:
             self.payment_queue.S += (len(self.payment_queue) + customer_at_cashier) * (self.current_time - self.old_time)
 
             if event.type == Event.ARRIVAL:
+                self.number_of_customers_servered += 1
                 current_customer.system_entry_time = self.current_time
                 self.station_entry_queue.join_queue(current_customer)
 
@@ -553,6 +556,8 @@ class Simulation:
 
         results["Total time spent in the system"] = np.mean(self.total_time_spent_in_system)
 
+        results["Number of customers served"] = self.number_of_customers_servered
+
 
         results = pd.DataFrame(results, index=[f"Results for Runtime: {self.max_time}"]).T
 
@@ -587,7 +592,7 @@ class Simulation:
 
             # customers that arrive after the closing time are not served (our policy)
             if self.current_time >= self.max_time and event.type == Event.ARRIVAL:
-                print(f"Customer {event.customer.cust_id} arrived after closing time -> customer not served")                        
+                # print(f"Customer {event.customer.cust_id} arrived after closing time -> customer not served")                        
                 continue
 
             # print(repr(event))
@@ -831,7 +836,6 @@ class Simulation:
         results = pd.DataFrame(results, index=[f"Results for Runtime: {self.max_time}"]).T
 
         return results
-    
 
     #-----------------------------------------------------------Simulation without the shop------------------------------------------------------#
     def simulation_no_shop(self):
@@ -854,7 +858,7 @@ class Simulation:
 
             # customers that arrive after the closing time are not served (our policy)
             if self.current_time >= self.max_time and event.type == Event.ARRIVAL:
-                print(f"Customer {event.customer.cust_id} arrived after closing time -> customer not served")                        
+                # print(f"Customer {event.customer.cust_id} arrived after closing time -> customer not served")                        
                 continue
 
             # print(repr(event))
@@ -873,6 +877,7 @@ class Simulation:
             self.station_entry_queue.S += (len(self.station_entry_queue) + num_customers_at_fuel_pumps) * (self.current_time - self.old_time)
 
             if event.type == Event.ARRIVAL:
+                self.number_of_customers_servered += 1
                 current_customer.system_entry_time = self.current_time
                 self.station_entry_queue.join_queue(current_customer)
 
@@ -1044,6 +1049,7 @@ class Simulation:
         results["Queue length Fuel station"] = self.station_entry_queue.S / self.current_time
 
         results["Total time spent in the system"] = np.mean(self.total_time_spent_in_system)
+        results["Number of customers served"] = self.number_of_customers_servered
 
 
         results = pd.DataFrame(results, index=[f"Results for Runtime: {self.max_time}"]).T
@@ -1067,7 +1073,7 @@ class Simulation:
 
             # customers that arrive after the closing time are not served (our policy)
             if self.current_time >= self.max_time and event.type == Event.ARRIVAL:
-                print(f"Customer {event.customer.cust_id} arrived after closing time -> customer not served")                        
+                # print(f"Customer {event.customer.cust_id} arrived after closing time -> customer not served")                        
                 continue
 
             # print(repr(event))
@@ -1093,6 +1099,7 @@ class Simulation:
             self.payment_queue.S += (len(self.payment_queue) + customer_at_cashier) * (self.current_time - self.old_time)
 
             if event.type == Event.ARRIVAL:
+                self.number_of_customers_servered += 1
                 current_customer.system_entry_time = self.current_time
                 self.station_entry_queue.join_queue(current_customer)
 
@@ -1261,12 +1268,23 @@ class Simulation:
         results["Queue length Payment queue"] = self.payment_queue.S / self.current_time
 
         results["Total time spent in the system"] = np.mean(self.total_time_spent_in_system)
+        results["Number of customers served"] = self.number_of_customers_servered
 
 
         results = pd.DataFrame(results, index=[f"Results for Runtime: {self.max_time}"]).T
 
         return results
 
+
+def confidence_interval(results, confidence=0.95):
+    results = np.array(results)
+    mean = results.mean(axis=0)
+    std_dev = results.std(axis=0, ddof=1)
+
+    low = mean - (1.96 * (std_dev / np.sqrt(len(results))))
+    high = mean + (1.96 * (std_dev / np.sqrt(len(results))))
+
+    return low, high
 
 def main():
     # fuel_time_dist = scipy.stats.gamma(a = 3.7407418789843607, scale = 1 / 0.7739719530752498)
@@ -1279,8 +1297,63 @@ def main():
     # service_time_payment_dist = scipy.stats.gamma(a = 64.16085452170083, scale = 1 / 1.426471221627218)
     # interarrival_dist = scipy.stats.gamma(a = 1.044611732553164, scale = 1 / 0.43845438113895135)
 
+    # seed for reproducibility
+    np.random.seed(420420)
+
+    # NOTE: order of input parameters: [fuel_time_dist, shop_time_dist, service_time_payment_dist, interarrival_dist]
     alphas = [3.740741878984356, 0.9896321424751765, 64.16085452170083, 1.044611732553164]
     betas = [0.014062799908188449, 0.014062799908188449, 1.426471221627218, 0.007307573018982521]
+
+    n_runs = 5
+
+    # Perform n_run simulations
+    sim_names = ["Base simulation fitted distributions", "Simulation without the shop", "Simulation with four lines of pumps"]
+
+    for sim_name in range(3):
+
+        simulation_results = [[] for i in range(n_runs)]
+
+        if sim_name == 0:
+            for i in range(n_runs):
+                sim = Simulation(alphas, betas)
+                simulation_results[i] = (sim.base_simulation_fitted())
+                # print (f"Simulation {i} done")
+        
+        elif sim_name == 1:
+            for i in range(n_runs):
+                sim = Simulation(alphas, betas)
+                simulation_results[i] = (sim.simulation_no_shop())
+                # print (f"Simulation {i} done")
+        
+        elif sim_name == 2:
+            for i in range(n_runs):
+                sim = Simulation(alphas, betas)
+                simulation_results[i] = (sim.simulation_four_lines_of_pumps())
+                # print (f"Simulation {i} done")
+
+        print(f"\n-------------------Results for {sim_names[sim_name]}-------------------")
+        column_names = simulation_results[0].columns
+        simulation_results= np.array(simulation_results)
+        mean = simulation_results.mean(axis=0)
+
+        lower_bound, upper_bound = confidence_interval(simulation_results)
+        for i in range(len(mean)):
+            print(f"{mean[i]} [{lower_bound[i]}, {upper_bound[i]}]")
+
+
+    #--------------------------------------------------------------------------#
+    # simulation_results_no_shop = [[] for i in range(1000)]
+    # for i in range(1000):
+    #     sim = Simulation(alphas, betas)
+    #     simulation_results_no_shop[i] = (sim.simulation_no_shop())
+    
+    # simulation_results_four_lines = [[] for i in range(1000)]
+    # for i in range(1000):
+    #     sim = Simulation(alphas, betas)
+    #     results[i] = (sim.simulation_four_lines_of_pumps())
+    
+    # Calculate the confidence interval for each simulation
+
 
     # alphas = [3.9551541717858245, 1.05921370294806, 58.43434713289647, 0.8892740597600279] 
     # betas = [0.014556317588821087, 0.013010455433109904, 1.2997841602373075, 0.006138604970207456]
@@ -1292,38 +1365,33 @@ def main():
 
     # sim = Simulation(interarrival_dist, fuel_time_dist, shop_time_dist, service_time_payment_dist)
 
-    # set the seed for reproducibility
-    np.random.seed(420420)
+    # print("Base simulation")
+    # sim_basic = Simulation(alphas, betas)
+    # results = sim_basic.base_simulation_fitted()
 
-    print("Base simulation")
-    sim_basic = Simulation(alphas, betas)
-    results = sim_basic.base_simulation_fitted()
-
-    print(tabulate(results, headers='keys', tablefmt='pretty'))
-    print("")
+    # print(tabulate(results, headers='keys', tablefmt='pretty'))
+    # print("")
 
 
-    print("Simulation with actual dataset")
-    sim_imperial = Simulation(alphas, betas)
-    results_imperial = sim_imperial.base_simulation_impreical_data()
+    # print("Simulation with actual dataset")
+    # sim_imperial = Simulation(alphas, betas)
+    # results_imperial = sim_imperial.base_simulation_impreical_data()
 
-    print(tabulate(results_imperial, headers='keys', tablefmt='pretty'))
-    print("")
+    # print(tabulate(results_imperial, headers='keys', tablefmt='pretty'))
+    # print("")    
 
-    
+    # print("Simulation without the shop")
+    # sim_scenario_2 = Simulation(alphas, betas)
+    # results2 = sim_scenario_2.simulation_no_shop()
 
-    print("Simulation without the shop")
-    sim_scenario_2 = Simulation(alphas, betas)
-    results2 = sim_scenario_2.simulation_no_shop()
+    # print(tabulate(results2, headers='keys', tablefmt='pretty'))
+    # print("")
 
-    print(tabulate(results2, headers='keys', tablefmt='pretty'))
-    print("")
+    # print("Simulation with four lines of pumps")
+    # sim_scenario_3 = Simulation(alphas, betas)
+    # results3 = sim_scenario_3.simulation_four_lines_of_pumps()
 
-    print("Simulation with four lines of pumps")
-    sim_scenario_3 = Simulation(alphas, betas)
-    results3 = sim_scenario_3.simulation_four_lines_of_pumps()
-
-    print(tabulate(results3, headers='keys', tablefmt='pretty'))
+    # print(tabulate(results3, headers='keys', tablefmt='pretty'))
 
 
 if __name__ == "__main__":
