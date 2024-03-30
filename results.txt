@@ -4,39 +4,3 @@ Seed: 420420
 Alpha values: [3.740741878984356, 0.9896321424751765, 64.16085452170083, 1.044611732553164]
 Beta values: [0.014062799908188449, 0.014062799908188449, 1.426471221627218, 0.007307573018982521]
 Mu value: 45.6603325415677
-
--------------------Results for Base simulation with empirical data (benchmark)-------------------
-Waiting time Fuel station: has mean 1693.0615752019005 (+- 21.993801690550626) and std 112.21327393138075 
-Queue length Fuel station: has mean 13.351144085047768 (+- 0.15662580818940633) and std 0.7991112662724813 
-Queue length shop: has mean 0.10125188972975241 (+- 0.0005794184543327104) and std 0.0029562166037383182 
-Waiting time Payment queue: has mean 5.710822494061764 (+- 0.1238567801130738) and std 0.6319223475156827 
-Queue length Payment queue: has mean 0.3309744092601726 (+- 0.0016355293854759282) and std 0.008344537680999634 
-Total time spent in the system: has mean 2072.222514655582 (+- 22.17822976695029) and std 113.15423350484842 
-
-
--------------------Results for Base simulation fitted distributions-------------------
-Waiting time Fuel station: has mean 569.5658738463341 (+- 80.03472109354291) and std 408.34041374256583 
-Queue length Fuel station: has mean 6.345439619428748 (+- 0.5731044524863171) and std 2.924002308603659 
-Queue length shop: has mean 0.10672188238856291 (+- 0.003288137624159652) and std 0.01677621236816149 
-Waiting time Payment queue: has mean 6.272992479875187 (+- 0.13695664343781475) and std 0.69875838488681 
-Queue length Payment queue: has mean 0.35496621496594466 (+- 0.003079552648319449) and std 0.01571200330775229 
-Total time spent in the system: has mean 924.2377159251528 (+- 80.72157238614618) and std 411.8447570721744 
-Number of customers served: has mean 402.32 (+- 3.3976622684582773) and std 17.33501157376672 
-
-
--------------------Results for Simulation without the shop-------------------
-Waiting time Fuel station: has mean 375.52831198489656 (+- 53.320291637084075) and std 272.0423042708371 
-Queue length Fuel station: has mean 4.921416130022606 (+- 0.4111727693489867) and std 2.0978202517805444 
-Total time spent in the system: has mean 704.9327684907163 (+- 53.95718383327647) and std 275.29175425141057 
-Number of customers served: has mean 405.57 (+- 3.868108038769854) and std 19.73524509576456 
-
-
--------------------Results for Simulation with four lines of pumps-------------------
-Waiting time Fuel station: has mean 53.506487772703814 (+- 4.500385086859494) and std 22.96114840234436 
-Queue length Fuel station: has mean 2.6966762695486715 (+- 0.053406666943532834) and std 0.2724829946098614 
-Queue length shop: has mean 0.1093866652965115 (+- 0.0033409585820113772) and std 0.017045707051078454 
-Waiting time Payment queue: has mean 7.782912368187493 (+- 0.2131468424997932) and std 1.0874838903050674 
-Queue length Payment queue: has mean 0.3704259415366492 (+- 0.004451984213107909) and std 0.022714205168917905 
-Total time spent in the system: has mean 388.7129019003238 (+- 5.045075680447192) and std 25.74018204309792 
-Number of customers served: has mean 401.81 (+- 4.04776250730642) and std 20.65184952707357 
-
