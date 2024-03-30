@@ -1276,7 +1276,7 @@ def main():
     # for poission distribution of service time payment
     mu = 45.6603325415677
 
-    n_runs = 100
+    n_runs = 1000
 
     # Perform n_run simulations
     sim_names = ["Base simulation with empirical data (benchmark)" ,"Base simulation fitted distributions", "Simulation without the shop", "Simulation with four lines of pumps"]
