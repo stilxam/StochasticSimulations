@@ -1473,24 +1473,27 @@ def plotting_base_simulation_results():
     ci_high_over_times_df = pd.concat(ci_high, axis=1)
     out_means = pd.concat(out_means, axis=1)
 
-    fig, ax = plt.subplots(len(df.columns), 1, figsize=(10, 30))
+    # fig, ax = plt.subplots(len(df.columns), 1, figsize=(10, 30))
     #plt.subplots_adjust(hspace=1.5)
 
 
 
 
     for i, col in enumerate(df.columns):
-        ax[i].plot(out_means.loc[col], label=f"Mean {col}", color='orange')
-        ax[i].fill_between(list(range(n_sims - 1)), ci_low_over_times_df.loc[col], ci_high_over_times_df.loc[col],
+        fig, ax = plt.subplots(1, 1, figsize=(10, 6))
+        ax.plot(out_means.loc[col], label=f"Mean {col}", color='orange')
+        ax.fill_between(list(range(n_sims - 1)), ci_low_over_times_df.loc[col], ci_high_over_times_df.loc[col],
                            alpha=0.5, label=f"CI {col}")
-        ax[i].set_xlabel("Number of simulations".title(), fontsize=16)
-        ax[i].set_ylabel(f"{col}", fontsize=16)
-        ax[i].tick_params(axis='both', which='major', labelsize=14)
-        ax[i].tick_params(axis='both', which='minor', labelsize=12)
-        ax[i].legend()
+        ax.set_xlabel("Number of simulations".title(), fontsize=16)
+        ax.set_ylabel(f"{col}", fontsize=16)
+        ax.tick_params(axis='both', which='major', labelsize=14)
+        ax.tick_params(axis='both', which='minor', labelsize=12)
+        ax.legend()
+        # fig.suptitle(f"{col.title()}, Base Simulation (with Empirical Data) \nover {n_sims-1} simulations".title(), fontsize=20)
+        fig.savefig(f"assignments/three/graphs/base_fitted/base_simulation_results_{col}.png")
 
     # set the title to the figure
-    fig.suptitle(f"Results Base Simulation (with fitted distributions) \nover {n_sims-1} simulations".title(), fontsize=24, y = 0.92)
+    # fig.suptitle(f"Results Base Simulation (with fitted distributions) \nover {n_sims-1} simulations".title(), fontsize=24, y = 0.92)
     fig.savefig("base_simulation_results.png")
     plt.show()
 
@@ -1548,24 +1551,27 @@ def plotting_det_simulation_results():
     ci_high_over_times_df = pd.concat(ci_high, axis=1)
     out_means = pd.concat(out_means, axis=1)
 
-    fig, ax = plt.subplots(len(df.columns), 1, figsize=(10, 30))
+    # fig, ax = plt.subplots(len(df.columns), 1, figsize=(10, 30))
     #plt.subplots_adjust(hspace=1.5)
 
 
 
 
     for i, col in enumerate(df.columns):
-        ax[i].plot(out_means.loc[col], label=f"Mean {col}", color='orange')
-        ax[i].fill_between(list(range(n_sims - 1)), ci_low_over_times_df.loc[col], ci_high_over_times_df.loc[col],
+        fig, ax = plt.subplots(1, 1, figsize=(10, 6))
+        ax.plot(out_means.loc[col], label=f"Mean {col}", color='orange')
+        ax.fill_between(list(range(n_sims - 1)), ci_low_over_times_df.loc[col], ci_high_over_times_df.loc[col],
                            alpha=0.5, label=f"CI {col}")
-        ax[i].set_xlabel("Number of simulations".title(), fontsize=16)
-        ax[i].set_ylabel(f"{col}", fontsize=16)
-        ax[i].tick_params(axis='both', which='major', labelsize=14)
-        ax[i].tick_params(axis='both', which='minor', labelsize=12)
-        ax[i].legend()
+        ax.set_xlabel("Number of simulations".title(), fontsize=16)
+        ax.set_ylabel(f"{col}", fontsize=16)
+        ax.tick_params(axis='both', which='major', labelsize=14)
+        ax.tick_params(axis='both', which='minor', labelsize=12)
+        ax.legend()
+        # fig.suptitle(f"{col.title()}, Base Simulation (with Empirical Data) \nover {n_sims-1} simulations".title(), fontsize=20)
+        fig.savefig(f"assignments/three/graphs/base_empirical/det_simulation_results_{col}.png")
 
     # set the title to the figure
-    fig.suptitle(f"Results Base Simulation (with Empirical Data) \nover {n_sims-1} simulations".title(), fontsize=24, y = 0.92)
+    # fig.suptitle(f"Results Base Simulation (with Empirical Data) \nover {n_sims-1} simulations".title(), fontsize=24, y = 0.92)
     fig.savefig("det_simulation_results.png")
     plt.show()
 
@@ -1622,24 +1628,28 @@ def plotting_no_shop_simulation_results():
     ci_high_over_times_df = pd.concat(ci_high, axis=1)
     out_means = pd.concat(out_means, axis=1)
 
-    fig, ax = plt.subplots(len(df.columns), 1, figsize=(10, 30))
+    # fig, ax = plt.subplots(len(df.columns), 1, figsize=(10, 30))
     #plt.subplots_adjust(hspace=1.5)
 
 
 
 
     for i, col in enumerate(df.columns):
-        ax[i].plot(out_means.loc[col], label=f"Mean {col}", color='orange')
-        ax[i].fill_between(list(range(n_sims - 1)), ci_low_over_times_df.loc[col], ci_high_over_times_df.loc[col],
+        fig, ax = plt.subplots(1, 1, figsize=(10, 6))
+
+        ax.plot(out_means.loc[col], label=f"Mean {col}", color='orange')
+        ax.fill_between(list(range(n_sims - 1)), ci_low_over_times_df.loc[col], ci_high_over_times_df.loc[col],
                            alpha=0.5, label=f"CI {col}")
-        ax[i].set_xlabel("Number of simulations".title(), fontsize=16)
-        ax[i].set_ylabel(f"{col}", fontsize=16)
-        ax[i].tick_params(axis='both', which='major', labelsize=14)
-        ax[i].tick_params(axis='both', which='minor', labelsize=12)
-        ax[i].legend()
+        ax.set_xlabel("Number of simulations".title(), fontsize=16)
+        ax.set_ylabel(f"{col}", fontsize=16)
+        ax.tick_params(axis='both', which='major', labelsize=14)
+        ax.tick_params(axis='both', which='minor', labelsize=12)
+        ax.legend()
+        # fig.suptitle(f"{col.title()}, Gas Station With No Shop \nover {n_sims-1} simulations".title(), fontsize=20)
+        fig.savefig(f"assignments/three/graphs/no_shop/no_shop_simulation_results_{col}.png")
 
     # set the title to the figure
-    fig.suptitle(f"Results of Gas Station With No Shop \nover {n_sims-1} simulations".title(), fontsize=24, y = 0.92)
+    # fig.suptitle(f"Results of Gas Station With No Shop \nover {n_sims-1} simulations".title(), fontsize=24, y = 0.92)
     fig.savefig("no_shop_simulation_results.png")
     plt.show()
 
@@ -1696,26 +1706,31 @@ def plotting_four_pumps_simulation_results():
     ci_high_over_times_df = pd.concat(ci_high, axis=1)
     out_means = pd.concat(out_means, axis=1)
 
-    fig, ax = plt.subplots(len(df.columns), 1, figsize=(10, 30))
+    # fig, ax = plt.subplots(len(df.columns), 1, figsize=(10, 30))
     #plt.subplots_adjust(hspace=1.5)
 
 
 
     for i, col in enumerate(df.columns):
-        ax[i].plot(out_means.loc[col], label=f"Mean {col}", color='orange')
-        ax[i].fill_between(list(range(n_sims - 1)), ci_low_over_times_df.loc[col], ci_high_over_times_df.loc[col],
+        fig, ax = plt.subplots(1, 1, figsize=(10, 6))
+        ax.plot(out_means.loc[col], label=f"Mean {col}", color='orange')
+        ax.fill_between(list(range(n_sims - 1)), ci_low_over_times_df.loc[col], ci_high_over_times_df.loc[col],
                            alpha=0.5, label=f"CI {col}")
-        ax[i].set_xlabel("Number of simulations".title(), fontsize=16)
-        ax[i].set_ylabel(f"{col}", fontsize=16)
-        ax[i].tick_params(axis='both', which='major', labelsize=14)
-        ax[i].tick_params(axis='both', which='minor', labelsize=12)
-        ax[i].legend()
+        ax.set_xlabel("Number of simulations".title(), fontsize=16)
+        ax.set_ylabel(f"{col}", fontsize=16)
+        ax.tick_params(axis='both', which='major', labelsize=14)
+        ax.tick_params(axis='both', which='minor', labelsize=12)
+        ax.legend()
+        # fig.suptitle(f"{col.title()}, Gas Station with Four lines of fuel pumps \nover {n_sims-1} Simulation".title(), fontsize=20)
+        fig.savefig(f"assignments/three/graphs/four_lines/four_pumps_simulation_results_{col}.png")
+
 
     # set the title to the figure
-    fig.suptitle(f"Results of Gas Station with Four lines of fuel pumps \nover {n_sims-1} Simulation".title(), fontsize=24, y = 0.92)
-    fig.savefig("four_pumps_simulation_results.png")
+    # fig.suptitle(f"Results of Gas Station with Four lines of fuel pumps \nover {n_sims-1} Simulation".title(), fontsize=24, y = 0.92)
 
-    plt.show()
+    # fig.savefig("four_pumps_simulation_results.png")
+
+    # plt.show()
 
 
 if __name__ == "__main__":
