@@ -166,8 +166,9 @@ class Simulation:
 
         temp_customer.parking_preference = np.random.choice([Customer.NO_PREFERENCE, Customer.LEFT, Customer.RIGHT],
                                                             p=[0.828978622327791, 0.09501187648456057, 0.07600950118764846])
-        
+     
         temp_customer.wants_to_shop = np.random.choice([True, False], p=[0.22327790973871733, 0.7767220902612827])
+
         return temp_customer
 
     def handle_no_preference(self):
@@ -1257,7 +1258,9 @@ def confidence_interval(results, confidence=0.95):
     low = mean - (1.96 * (std_dev / np.sqrt(len(results))))
     high = mean + (1.96 * (std_dev / np.sqrt(len(results))))
 
-    return low, high
+    # return low, high
+
+    return (1.96 * (std_dev / np.sqrt(len(results))))
 
 
 #---------------------------------------------Main function------------------------------------------------------#
@@ -1273,7 +1276,7 @@ def main():
     # for poission distribution of service time payment
     mu = 45.6603325415677
 
-    n_runs = 1000
+    n_runs = 100
 
     # Perform n_run simulations
     sim_names = ["Base simulation with empirical data (benchmark)" ,"Base simulation fitted distributions", "Simulation without the shop", "Simulation with four lines of pumps"]
@@ -1292,11 +1295,13 @@ def main():
     for sim_name in range(4):
 
         simulation_results = [[] for i in range(n_runs)]
-
+        
         if sim_name == 0:
             print("Base simulation with empirical data (benchmark)")
-            benchmark_sim_result = sim.base_simulation_impirical_data()
-            sim.setup_simulation()
+            for i in range(n_runs):
+                simulation_results[i] = sim.base_simulation_impirical_data()
+                sim.setup_simulation()
+                print (f"Base Impirical Simulation {i} done")
 
         if sim_name == 1:
             print("Base simulation fitted distributions")
@@ -1331,38 +1336,42 @@ def main():
         #     # print(f"{mean[i]} [{lower_bound[i]}, {upper_bound[i]}]")
         #     print(f"{keys[i]}: {mean[i][0]} [{lower_bound[i][0]}, {upper_bound[i][0]}]")
                 
-        if sim_name == 0:
-            with open('results.txt', 'a') as f:
-                f.write(f"\n-------------------Results for {sim_names[sim_name]}-------------------\n")
-                line = f"Waiting time Fuel station: {benchmark_sim_result["Waiting time Fuel station"]}\n"
-                f.write(line)
-                line = f"Queue length Fuel station: {benchmark_sim_result["Queue length Fuel station"]}\n"
-                f.write(line)
-                line = f"Queue length shop: {benchmark_sim_result["Queue length shop"]}\n"
-                f.write(line)
-                line = f"Waiting time Payment queue: {benchmark_sim_result["Waiting time Payment queue"]}\n"
-                f.write(line)
-                line = f"Queue length Payment queue: {benchmark_sim_result["Queue length Payment queue"]}\n"
-                f.write(line)
-                line = f"Total time spent in the system: {benchmark_sim_result["Total time spent in the system"]}\n"
-                f.write(line)
-                line = f"Number of customers served: 420 \n"
-                f.write(line)
+        # if sim_name == 0:
+        #     with open('results.txt', 'a') as f:
+        #         f.write(f"\n-------------------Results for {sim_names[sim_name]}-------------------\n")
+        #         line = f"Waiting time Fuel station: {benchmark_sim_result["Waiting time Fuel station"]}\n"
+        #         f.write(line)
+        #         line = f"Queue length Fuel station: {benchmark_sim_result["Queue length Fuel station"]}\n"
+        #         f.write(line)
+        #         line = f"Queue length shop: {benchmark_sim_result["Queue length shop"]}\n"
+        #         f.write(line)
+        #         line = f"Waiting time Payment queue: {benchmark_sim_result["Waiting time Payment queue"]}\n"
+        #         f.write(line)
+        #         line = f"Queue length Payment queue: {benchmark_sim_result["Queue length Payment queue"]}\n"
+        #         f.write(line)
+        #         line = f"Total time spent in the system: {benchmark_sim_result["Total time spent in the system"]}\n"
+        #         f.write(line)
+        #         line = f"Number of customers served: 420 \n"
+        #         f.write(line)
 
-        else:
-            with open('results.txt', 'a') as f:
-                f.write(f"\n-------------------Results for {sim_names[sim_name]}-------------------\n")
-                keys = list(simulation_results[0].keys())
-                simulation_results = [pd.DataFrame(simulation_results[i], index=[f"Results for Runtime: {i}"]).T for i in range(n_runs)]
-                simulation_results= np.array(simulation_results)
-                mean = simulation_results.mean(axis=0)
+        # else:
+        with open('results.txt', 'a') as f:
+            f.write(f"\n-------------------Results for {sim_names[sim_name]}-------------------\n")
+            keys = list(simulation_results[0].keys())
+            simulation_results = [pd.DataFrame(simulation_results[i], index=[f"Results for Runtime: {i}"]).T for i in range(n_runs)]
+            simulation_results= np.array(simulation_results)
+            mean = simulation_results.mean(axis=0)
+            std = simulation_results.std(axis=0, ddof = 1)
 
-                lower_bound, upper_bound = confidence_interval(simulation_results)
-                for i in range(len(mean)):
-                    result_line = f"{keys[i]}: {mean[i][0]} [{lower_bound[i][0]}, {upper_bound[i][0]}]\n"
-                    f.write(result_line)
-                
-                f.write("\n")
+            # lower_bound, upper_bound = confidence_interval(simulation_results)
+            ci = confidence_interval(simulation_results)
+
+            for i in range(len(mean)):
+                # result_line = f"{keys[i]}: {mean[i][0]} [{lower_bound[i][0]}, {upper_bound[i][0]}] and std {std[i][0]} \n"
+                result_line = f"{keys[i]}: has mean {mean[i][0]} (+- {ci[i][0]}) and std {std[i][0]} \n"
+                f.write(result_line)
+            
+            f.write("\n")
 
     # print("Base simulation")
     # sim_basic = Simulation(alphas, betas)
