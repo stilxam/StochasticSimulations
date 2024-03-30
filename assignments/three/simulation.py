@@ -134,73 +134,248 @@ class FES:
 
 
 class Event:
+    """
+    A class used to represent an Event in the simulation.
+
+    Attributes
+    ----------
+    ARRIVAL : int
+        A constant representing the arrival event type.
+    FUEL_DEPARTURE : int
+        A constant representing the fuel departure event type.
+    SHOP_DEPARTURE : int
+        A constant representing the shop departure event type.
+    PAYMENT_DEPARTURE : int
+        A constant representing the payment departure event type.
+    type : int
+        The type of the event.
+    customer : Customer
+        The customer associated with the event.
+    time : float
+        The time of the event.
+
+    Methods
+    -------
+    __init__(type, customer, time_of_event)
+        Constructs the Event class.
+    __lt__(other)
+        Checks if the time of this event is less than the time of another event.
+    __repr__()
+        Returns a string representation of the event.
+    """
+
     ARRIVAL = 0  # constant for arrival type
     FUEL_DEPARTURE = 1  # constant for fuel departure type
     SHOP_DEPARTURE = 2  # constant for shop departure type
     PAYMENT_DEPARTURE = 3  # constant for payment departure type
 
     def __init__(self, type, customer: Customer, time_of_event):
+        """
+        Constructs the Event class.
+
+        Parameters:
+        type (int): The type of the event.
+        customer (Customer): The customer associated with the event.
+        time_of_event (float): The time of the event.
+        """
         self.type = type
         self.customer = customer
         self.time = time_of_event
 
     def __lt__(self, other):
+        """
+        Checks if the time of this event is less than the time of another event.
+
+        Parameters:
+        other (Event): Another event to compare with.
+
+        Returns:
+        bool: True if the time of this event is less than the time of the other event, False otherwise.
+        """
+
         return self.time < other.time
 
     def __repr__(self):
+        """
+        Returns a string representation of the event.
+
+        Returns:
+        str: A string representation of the event.
+        """
+
         s = ("Arrival", "Fuel Departure", "Shop Departure", "Payment Departure")
         return f"customer {self.customer.cust_id} has event type {s[self.type]} at time {self.time}"
 
 
 class Queue:
+    """
+    A class used to represent a Queue in the simulation.
+
+    Attributes
+    ----------
+    EMPTY : int
+        A constant representing the empty queue status.
+    NOT_EMPTY : int
+        A constant representing the non-empty queue status.
+    customers_in_queue : list
+        A list of customers in the queue.
+    S : int
+        The total service time for all customers in the queue.
+
+    Methods
+    -------
+    __init__()
+        Constructs the Queue class.
+    join_queue(customer)
+        Adds a customer to the queue.
+    leave_queue(customer)
+        Removes a customer from the queue.
+    get_queue_status()
+        Returns the status of the queue.
+    __len__()
+        Returns the length of the queue.
+    """
+
     # type of queue status
     EMPTY = 4  # constant for queue is empty
     NOT_EMPTY = 5  # constant for queue is not empty
 
     def __init__(self):
+        """
+        Constructs the Queue class with an empty customers list and zero total service time.
+        """
         self.customers_in_queue = []
         self.S = 0
 
     def join_queue(self, customer: Customer):
+        """
+        Adds a customer to the queue.
+
+        Parameters:
+        customer (Customer): The customer to be added to the queue.
+        """
+
         self.customers_in_queue.append(customer)
 
     def leave_queue(self, customer: Customer):
+        """
+        Removes a customer from the queue.
+
+        Parameters:
+        customer (Customer): The customer to be removed from the queue.
+        """
         self.customers_in_queue.remove(customer)
 
     def get_queue_status(self):
+        """
+        Returns the status of the queue.
+
+        Returns:
+        int: The status of the queue. Returns EMPTY if the queue is empty, NOT_EMPTY otherwise.
+        """
+
         return Queue.EMPTY if len(self.customers_in_queue) == 0 else Queue.NOT_EMPTY
 
     def __len__(self):
+        """
+        Returns the length of the queue.
+
+        Returns:
+        int: The length of the queue.
+        """
         return len(self.customers_in_queue)
 
 
 class Server:
+    """
+    A class used to represent a Server in the simulation.
+
+    Attributes
+    ----------
+    IDLE : int
+        A constant representing the idle server status.
+    BUSY : int
+        A constant representing the busy server status.
+    server_id : str
+        The identifier of the server.
+    status : int
+        The status of the server.
+    current_customer : Customer
+        The current customer being served by the server.
+
+    Methods
+    -------
+    __init__(server_id)
+        Constructs the Server class.
+    customer_arrive(customer)
+        Sets the server status to BUSY and assigns a customer to the server.
+    customer_leave()
+        Sets the server status to IDLE and removes the current customer from the server.
+    """
+
     IDLE = 0
     BUSY = 1
 
     def __init__(self, server_id):
-        # cahsier and fuel pumps ar instances of the server class
-        # casheir id will look like C1, C2, C3
+        """
+        Constructs the Server class with a given server_id, sets the status to IDLE and current_customer to None.
+
+        Parameters:
+        server_id (str): The identifier of the server.
+        """
+
+        # cashier and fuel pumps are instances of the server class
+        # cashier id will look like C1, C2, C3
         # fuel pump id will look like 0,1,2,3
         self.server_id = server_id
         self.status = Server.IDLE
         self.current_customer = None
 
     def customer_arrive(self, customer: Customer):
+        """
+        Sets the server status to BUSY and assigns a customer to the server.
+
+        Parameters:
+        customer (Customer): The customer to be served by the server.
+        """
         self.current_customer = customer
         self.status = Server.BUSY
 
     def customer_leave(self):
+        """
+        Sets the server status to IDLE and removes the current customer from the server.
+        """
         self.status = Server.IDLE
         self.current_customer = None
 
 
 class Simulation:
+    """
+    A class used to represent a Simulation.
+
+    Attributes
+    ----------
+    alphas : list
+        A list of alpha parameters for the gamma distributions.
+    betas : list
+        A list of beta parameters for the gamma distributions.
+    poisson_mean : float
+        The mean parameter for the Poisson distribution.
+    """
 
     def __init__(self,
                  alphas,
                  betas, mu
                  ):
+        """
+        Constructs the Simulation class with given alphas, betas, and mu.
+
+        Parameters:
+        alphas (list): A list of alpha parameters for the gamma distributions.
+        betas (list): A list of beta parameters for the gamma distributions.
+        mu (float): The mean parameter for the Poisson distribution.
+        """
+
 
         self.alphas = alphas
         self.betas = betas
@@ -208,6 +383,10 @@ class Simulation:
         self.setup_simulation()
 
     def setup_simulation(self):
+        """
+        Sets up the simulation by initializing distributions, resetting simulation time and queues, resetting counters and measurements, initializing servers, and resetting statistics.
+        """
+
         # Initialize distributions
         self.fuel_time_dist = stats.gamma(a=self.alphas[0], scale=1 / self.betas[0])
         self.shop_time_dist = stats.gamma(a=self.alphas[1], scale=1 / self.betas[1])
@@ -244,6 +423,16 @@ class Simulation:
 
     # given a customer, it will set up the customer's data
     def set_customer_data(self, customer: Customer):
+        """
+        Sets up the customer's data.
+
+        Parameters:
+        customer (Customer): The customer whose data is to be set up.
+
+        Returns:
+        Customer: The customer with the set up data.
+        """
+
         temp_customer = customer  # simply another pointer to the same instance of the customer class instance
 
         temp_customer.parking_preference = np.random.choice([Customer.NO_PREFERENCE, Customer.LEFT, Customer.RIGHT],
@@ -255,6 +444,13 @@ class Simulation:
         return temp_customer
 
     def handle_no_preference(self):
+        """
+        Handles the scenario when the customer has no preference for the fuel pump.
+
+        Returns:
+        int: The id of the fuel pump if one is available, -1 otherwise.
+        """
+
 
         # returns -1 if the customer is not assigned to a pump, otherwise returns the fuel pump id
 
@@ -289,6 +485,13 @@ class Simulation:
             return -1
 
     def handle_left_preference(self):
+        """
+        Handles the scenario when the customer has a preference for the left fuel pump.
+
+        Returns:
+        int: The id of the fuel pump if one is available, -1 otherwise.
+        """
+
 
         # check pumps 3 and 4
         if self.pump_stations[3].status == Server.IDLE:
@@ -300,6 +503,13 @@ class Simulation:
             return -1  # cannot assign the customer to a pump
 
     def handle_right_preference(self):
+        """
+        Handles the scenario when the customer has a preference for the right fuel pump.
+
+        Returns:
+        int: The id of the fuel pump if one is available, -1 otherwise.
+        """
+
 
         # check pumps 1 and 2
         if self.pump_stations[1].status == Server.IDLE:
@@ -311,6 +521,17 @@ class Simulation:
             return -1  # cannot assign the customer to a pump
 
     def handle_preferences_scenario_three(self, cust_preference):
+        """
+        Handles the scenario when the customer has a specific preference for the fuel pump.
+
+        Parameters:
+        cust_preference (int): The customer's preference for the fuel pump.
+
+        Returns:
+        int: The id of the fuel pump if one is available, -1 otherwise.
+        """
+
+
 
         if cust_preference == Customer.NO_PREFERENCE:
             available_pumps = []
@@ -343,7 +564,27 @@ class Simulation:
 
     # -----------------------------------------Base simulation (with fitted distributions)------------------------------------------#
     def base_simulation_fitted(self):
+        """
+        Runs the base simulation of the gas station using fitted distributions for the interarrival times,
+        fueling times, shopping times, and payment times.
 
+        The simulation follows the process of a customer arriving at the gas station, choosing a fuel pump,
+        possibly going to the shop, and then paying at the cashier. The simulation takes into account the
+        customer's preferences for fuel pumps and whether they want to shop or not.
+
+        The simulation also handles different events such as the arrival of a customer, the departure of a
+        customer from the fuel pump, the departure of a customer from the shop, and the departure of a
+        customer from the payment queue.
+
+        The simulation continues until there are no more events in the future event scheduler (FES).
+
+        The results of the simulation are returned as a dictionary containing the average waiting times,
+        queue lengths, total time spent in the system, and the number of customers served.
+
+        Returns:
+        dict: A dictionary containing the results of the simulation. The keys of the dictionary are the
+        names of the metrics and the values are the calculated values for these metrics.
+        """
         self.customer_id += 1
         arrival_time = self.interarrival_dist.rvs()
         current_customer = Customer(self.customer_id)
@@ -621,7 +862,27 @@ class Simulation:
 
     # -----------------------------------------Base simulation (with actual dataset)------------------------------------------#
     def base_simulation_impirical_data(self):
+        """
+        Runs the base simulation of the gas station using empirical data for the interarrival times,
+        fueling times, shopping times, and payment times.
 
+        The simulation follows the process of a customer arriving at the gas station, choosing a fuel pump,
+        possibly going to the shop, and then paying at the cashier. The simulation takes into account the
+        customer's preferences for fuel pumps and whether they want to shop or not.
+
+        The simulation also handles different events such as the arrival of a customer, the departure of a
+        customer from the fuel pump, the departure of a customer from the shop, and the departure of a
+        customer from the payment queue.
+
+        The simulation continues until there are no more events in the future event scheduler (FES).
+
+        The results of the simulation are returned as a dictionary containing the average waiting times,
+        queue lengths, total time spent in the system, and the number of customers served.
+
+        Returns:
+        dict: A dictionary containing the results of the simulation. The keys of the dictionary are the
+        names of the metrics and the values are the calculated values for these metrics.
+        """
         # Loads the data
         data = pd.read_excel("assignments/three/gasstationdata33.xlsx")
 
@@ -896,6 +1157,20 @@ class Simulation:
 
     # -----------------------------------------Simulation without the shop------------------------------------------------------#
     def simulation_no_shop(self):
+        """
+        Runs the simulation of the gas station without a shop. In this scenario, each fuel pump has its own payment terminal.
+
+        The simulation follows the process of a customer arriving at the gas station, choosing a fuel pump, and then paying at the pump's terminal. The simulation takes into account the customer's preferences for fuel pumps.
+
+        The simulation also handles different events such as the arrival of a customer, the departure of a customer from the fuel pump, and the departure of a customer from the payment terminal.
+
+        The simulation continues until there are no more events in the future event scheduler (FES).
+
+        The results of the simulation are returned as a dictionary containing the average waiting times, queue lengths, total time spent in the system, and the number of customers served.
+
+        Returns:
+        dict: A dictionary containing the results of the simulation. The keys of the dictionary are the names of the metrics and the values are the calculated values for these metrics.
+        """
 
         # each fuel pump has its own payment terminal.
         # pump 0 has termnal 0, pump 1 has terminal 1 and so on
@@ -1112,6 +1387,27 @@ class Simulation:
 
     # ----------------------------------------Simulation with four lines of pumps------------------------------------------------------#
     def simulation_four_lines_of_pumps(self):
+        """
+        Runs the simulation of a gas station with four lines of fuel pumps.
+
+        The simulation follows the process of a customer arriving at the gas station, choosing a fuel pump,
+        possibly going to the shop, and then paying at the cashier. The simulation takes into account the
+        customer's preferences for fuel pumps and whether they want to shop or not.
+
+        The simulation also handles different events such as the arrival of a customer, the departure of a
+        customer from the fuel pump, the departure of a customer from the shop, and the departure of a
+        customer from the payment queue.
+
+        The simulation continues until there are no more events in the future event scheduler (FES).
+
+        The results of the simulation are returned as a dictionary containing the average waiting times,
+        queue lengths, total time spent in the system, and the number of customers served.
+
+        Returns:
+        dict: A dictionary containing the results of the simulation. The keys of the dictionary are the
+        names of the metrics and the values are the calculated values for these metrics.
+        """
+
 
         self.customer_id += 1
         arrival_time = self.interarrival_dist.rvs()
@@ -1345,6 +1641,21 @@ def confidence_interval(results, confidence=0.95):
 
 # ---------------------------------------------Main function------------------------------------------------------#
 def main():
+    """
+    The main function to run the gas station simulation.
+
+    This function sets up the parameters for the simulation, including the alpha and beta values for the gamma distributions,
+    the mean for the Poisson distribution, and the number of simulation runs. It then creates an instance of the Simulation class
+    and runs four different types of simulations: a base simulation with empirical data, a base simulation with fitted distributions,
+    a simulation without a shop, and a simulation with four lines of fuel pumps.
+
+    The results of each simulation run are stored in a list and written to a text file named 'results.txt'. The mean, standard deviation,
+    and confidence interval of the results are also calculated and written to the file.
+
+    Note: This function uses a random seed for reproducibility.
+    """
+
+
     # seed for reproducibility
     np.random.seed(420420)
 
