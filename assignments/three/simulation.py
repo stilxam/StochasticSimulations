@@ -291,12 +291,8 @@ class Simulation:
 
             # customers that arrive after the closing time are not served (our policy)
             if self.current_time >= self.max_time and event.type == Event.ARRIVAL:
-                # use the following print line only for testing purposes
-                # print(f"Customer {event.customer.cust_id} arrived after closing time -> customer not served")                        
                 continue
 
-            # use the following print line only for testing purposes
-            # print(repr(event))
             self.old_time = self.current_time
             self.current_time = event.time
 
@@ -1342,37 +1338,6 @@ def main():
                 sim.setup_simulation()
                 print(f"Four line Simulation {i} done")
 
-        # print(f"\n-------------------Results for {sim_names[sim_name]}-------------------")
-        # # retreive the keys of the dictionary
-        # keys = list(simulation_results[0].keys())
-        # simulation_results = [pd.DataFrame(simulation_results[i], index=[f"Results for Runtime: {i}"]).T for i in range(n_runs)]
-        # simulation_results= np.array(simulation_results)
-        # mean = simulation_results.mean(axis=0)
-
-        # lower_bound, upper_bound = confidence_interval(simulation_results)
-        # for i in range(len(mean)):
-        #     # print(f"{mean[i]} [{lower_bound[i]}, {upper_bound[i]}]")
-        #     print(f"{keys[i]}: {mean[i][0]} [{lower_bound[i][0]}, {upper_bound[i][0]}]")
-
-        # if sim_name == 0:
-        #     with open('results.txt', 'a') as f:
-        #         f.write(f"\n-------------------Results for {sim_names[sim_name]}-------------------\n")
-        #         line = f"Waiting time Fuel station: {benchmark_sim_result["Waiting time\nFuel station (s)"]}\n"
-        #         f.write(line)
-        #         line = f"Queue length Fuel station: {benchmark_sim_result["Queue length\nFuel station (Customers)"]}\n"
-        #         f.write(line)
-        #         line = f"Queue length shop: {benchmark_sim_result["Queue length\nshop (Customers)"]}\n"
-        #         f.write(line)
-        #         line = f"Waiting time Payment queue: {benchmark_sim_result["Waiting time\nPayment queue (s)"]}\n"
-        #         f.write(line)
-        #         line = f"Queue length Payment queue: {benchmark_sim_result["Queue length\nPayment queue (Customers)"]}\n"
-        #         f.write(line)
-        #         line = f"Total time spent in the system: {benchmark_sim_result["Total time\nspent in the system (s)"]}\n"
-        #         f.write(line)
-        #         line = f"Number of customers served: 420 \n"
-        #         f.write(line)
-
-        # else:
         with open('results.txt', 'a') as f:
             f.write(f"\n-------------------Results for {sim_names[sim_name]}-------------------\n")
             keys = list(simulation_results[0].keys())
@@ -1382,60 +1347,30 @@ def main():
             mean = simulation_results.mean(axis=0)
             std = simulation_results.std(axis=0, ddof=1)
 
-            # lower_bound, upper_bound = confidence_interval(simulation_results)
             ci = confidence_interval(simulation_results)
 
             for i in range(len(mean)):
-                # result_line = f"{keys[i]}: {mean[i][0]} [{lower_bound[i][0]}, {upper_bound[i][0]}] and std {std[i][0]} \n"
                 result_line = f"{keys[i]}: has mean {mean[i][0]} (+- {ci[i][0]}) and std {std[i][0]} \n"
                 f.write(result_line)
 
             f.write("\n")
 
-    # print("Base simulation")
-    # sim_basic = Simulation(alphas, betas)
-    # results = sim_basic.base_simulation_fitted()
 
-    # print(tabulate(results, headers='keys', tablefmt='pretty'))
-    # print("")
-
-    # print("Simulation with actual dataset")
-    # sim_imperial = Simulation(alphas, betas)
-    # results_imperial = sim_imperial.base_simulation_impreical_data()
-
-    # print(tabulate(results_imperial, headers='keys', tablefmt='pretty'))
-    # print("")    
-
-    # print("Simulation without the shop")
-    # sim_scenario_2 = Simulation(alphas, betas)
-    # results2 = sim_scenario_2.simulation_no_shop()
-
-    # print(tabulate(results2, headers='keys', tablefmt='pretty'))
-    # print("")
-
-    # print("Simulation with four lines of pumps")
-    # sim_scenario_3 = Simulation(alphas, betas)
-    # results3 = sim_scenario_3.simulation_four_lines_of_pumps()
-
-    # print(tabulate(results3, headers='keys', tablefmt='pretty'))
-
-
-def plotting_base_simulation_results():
+def plotting_base_simulation_results(n_runs =1, n_sims = 1000):
+    """
+    This function plots the evolution of the mean and confidence interval of the base simulation results over time
+    it stores the plots in the graphs/base_fitted folder
+    """
     alphas = [3.740741878984356, 0.9896321424751765, 64.16085452170083, 1.044611732553164]
     betas = [0.014062799908188449, 0.014062799908188449, 1.426471221627218, 0.007307573018982521]
 
     # for poission distribution of service time payment
     mu = 45.6603325415677
-
-    n_runs = 1
-    n_sims = 1001
+    n_sims +=1
 
     # Perform n_run simulations
 
     sim = Simulation(alphas, betas, mu=mu)
-    # simulation_results = pd.DataFrame(
-    #     columns=["Waiting time\nFuel station (s)", "Queue length\nFuel station (Customers)", "Queue length\nshop (Customers)", "Waiting time\nPayment queue (s)", "Queue length\nPayment queue (Customers)", "Total time\nspent in the system (s)", "Number of customers served"]
-    # )
 
     means = []
     variances = []
@@ -1465,16 +1400,10 @@ def plotting_base_simulation_results():
         ci_low.append(temp_mean.mean(axis=1) - 1.96 * np.sqrt(temp_var.mean(axis=1)) / np.sqrt(u * n_runs))
         ci_high.append(temp_mean.mean(axis=1) + 1.96 * np.sqrt(temp_var.mean(axis=1)) / np.sqrt(u * n_runs))
 
-    # print(ci_low[0].shape)
-
-    # means_over_times_df = pd.concat(means, axis=1)
-    # variances_over_times_df = pd.concat(variances, axis=1)
     ci_low_over_times_df = pd.concat(ci_low, axis=1)
     ci_high_over_times_df = pd.concat(ci_high, axis=1)
     out_means = pd.concat(out_means, axis=1)
 
-    # fig, ax = plt.subplots(len(df.columns), 1, figsize=(10, 30))
-    #plt.subplots_adjust(hspace=1.5)
 
 
 
@@ -1492,21 +1421,21 @@ def plotting_base_simulation_results():
         # fig.suptitle(f"{col.title()}, Base Simulation (with Empirical Data) \nover {n_sims-1} simulations".title(), fontsize=20)
         fig.savefig(f"assignments/three/graphs/base_fitted/base_simulation_results_{col}.png")
 
-    # set the title to the figure
-    # fig.suptitle(f"Results Base Simulation (with fitted distributions) \nover {n_sims-1} simulations".title(), fontsize=24, y = 0.92)
-    fig.savefig("base_simulation_results.png")
     plt.show()
 
 
-def plotting_det_simulation_results():
+def plotting_det_simulation_results(n_runs =1, n_sims = 1000):
+    """
+    This function plots the evolution of the mean and confidence interval of the base simulation results over time
+    it stores the plots in the graphs/base_empirical folder
+    """
     alphas = [3.740741878984356, 0.9896321424751765, 64.16085452170083, 1.044611732553164]
     betas = [0.014062799908188449, 0.014062799908188449, 1.426471221627218, 0.007307573018982521]
 
     # for poission distribution of service time payment
     mu = 45.6603325415677
 
-    n_runs = 1
-    n_sims = 1001
+    n_sims +=1
 
     # Perform n_run simulations
 
@@ -1538,21 +1467,15 @@ def plotting_det_simulation_results():
         # calculate the confidence interval
         temp_mean = pd.concat(means, axis=1)
         temp_var = pd.concat(variances, axis=1)
-        # print(temp_mean.mean(axis=1).shape)
         out_means.append(temp_mean.mean(axis=1))
         ci_low.append(temp_mean.mean(axis=1) - 1.96 * np.sqrt(temp_var.mean(axis=1)) / np.sqrt(u * n_runs))
         ci_high.append(temp_mean.mean(axis=1) + 1.96 * np.sqrt(temp_var.mean(axis=1)) / np.sqrt(u * n_runs))
 
-    # print(ci_low[0].shape)
 
-    # means_over_times_df = pd.concat(means, axis=1)
-    # variances_over_times_df = pd.concat(variances, axis=1)
     ci_low_over_times_df = pd.concat(ci_low, axis=1)
     ci_high_over_times_df = pd.concat(ci_high, axis=1)
     out_means = pd.concat(out_means, axis=1)
 
-    # fig, ax = plt.subplots(len(df.columns), 1, figsize=(10, 30))
-    #plt.subplots_adjust(hspace=1.5)
 
 
 
@@ -1567,30 +1490,26 @@ def plotting_det_simulation_results():
         ax.tick_params(axis='both', which='major', labelsize=14)
         ax.tick_params(axis='both', which='minor', labelsize=12)
         ax.legend()
-        # fig.suptitle(f"{col.title()}, Base Simulation (with Empirical Data) \nover {n_sims-1} simulations".title(), fontsize=20)
         fig.savefig(f"assignments/three/graphs/base_empirical/det_simulation_results_{col}.png")
 
-    # set the title to the figure
-    # fig.suptitle(f"Results Base Simulation (with Empirical Data) \nover {n_sims-1} simulations".title(), fontsize=24, y = 0.92)
-    fig.savefig("det_simulation_results.png")
     plt.show()
 
-def plotting_no_shop_simulation_results():
+def plotting_no_shop_simulation_results(n_runs =1, n_sims = 1000):
+    """
+    This function plots the evolution of the mean and confidence interval of the base simulation results over time
+    it stores the plots in the graphs/no_shop folder
+    """
     alphas = [3.740741878984356, 0.9896321424751765, 64.16085452170083, 1.044611732553164]
     betas = [0.014062799908188449, 0.014062799908188449, 1.426471221627218, 0.007307573018982521]
 
     # for poission distribution of service time payment
     mu = 45.6603325415677
 
-    n_runs = 1
-    n_sims = 1001
+    n_sims +=1
 
     # Perform n_run simulations
 
     sim = Simulation(alphas, betas, mu=mu)
-    # simulation_results = pd.DataFrame(
-    #     columns=["Waiting time\nFuel station (s)", "Queue length\nFuel station (Customers)", "Queue length\nshop (Customers)", "Waiting time\nPayment queue (s)", "Queue length\nPayment queue (Customers)", "Total time\nspent in the system (s)", "Number of customers served"]
-    # )
 
     means = []
     variances = []
@@ -1615,21 +1534,15 @@ def plotting_no_shop_simulation_results():
         # calculate the confidence interval
         temp_mean = pd.concat(means, axis=1)
         temp_var = pd.concat(variances, axis=1)
-        # print(temp_mean.mean(axis=1).shape)
         out_means.append(temp_mean.mean(axis=1))
         ci_low.append(temp_mean.mean(axis=1) - 1.96 * np.sqrt(temp_var.mean(axis=1)) / np.sqrt(u * n_runs))
         ci_high.append(temp_mean.mean(axis=1) + 1.96 * np.sqrt(temp_var.mean(axis=1)) / np.sqrt(u * n_runs))
 
-    # print(ci_low[0].shape)
 
-    # means_over_times_df = pd.concat(means, axis=1)
-    # variances_over_times_df = pd.concat(variances, axis=1)
     ci_low_over_times_df = pd.concat(ci_low, axis=1)
     ci_high_over_times_df = pd.concat(ci_high, axis=1)
     out_means = pd.concat(out_means, axis=1)
 
-    # fig, ax = plt.subplots(len(df.columns), 1, figsize=(10, 30))
-    #plt.subplots_adjust(hspace=1.5)
 
 
 
@@ -1645,31 +1558,27 @@ def plotting_no_shop_simulation_results():
         ax.tick_params(axis='both', which='major', labelsize=14)
         ax.tick_params(axis='both', which='minor', labelsize=12)
         ax.legend()
-        # fig.suptitle(f"{col.title()}, Gas Station With No Shop \nover {n_sims-1} simulations".title(), fontsize=20)
         fig.savefig(f"assignments/three/graphs/no_shop/no_shop_simulation_results_{col}.png")
 
-    # set the title to the figure
-    # fig.suptitle(f"Results of Gas Station With No Shop \nover {n_sims-1} simulations".title(), fontsize=24, y = 0.92)
-    fig.savefig("no_shop_simulation_results.png")
     plt.show()
 
 
-def plotting_four_pumps_simulation_results():
+def plotting_four_pumps_simulation_results(n_runs =1, n_sims = 1000):
+    """
+    This function plots the evolution of the mean and confidence interval of the base simulation results over time
+    it saves the plots in the graphs/four_lines folder
+    """
     alphas = [3.740741878984356, 0.9896321424751765, 64.16085452170083, 1.044611732553164]
     betas = [0.014062799908188449, 0.014062799908188449, 1.426471221627218, 0.007307573018982521]
 
     # for poission distribution of service time payment
     mu = 45.6603325415677
 
-    n_runs = 1
-    n_sims = 1001
+    n_sims +=1
 
     # Perform n_run simulations
 
     sim = Simulation(alphas, betas, mu=mu)
-    # simulation_results = pd.DataFrame(
-    #     columns=["Waiting time\nFuel station (s)", "Queue length\nFuel station (Customers)", "Queue length\nshop (Customers)", "Waiting time\nPayment queue (s)", "Queue length\nPayment queue (Customers)", "Total time\nspent in the system (s)", "Number of customers served"]
-    # )
 
     means = []
     variances = []
@@ -1698,16 +1607,11 @@ def plotting_four_pumps_simulation_results():
         ci_low.append(temp_mean.mean(axis=1) - 1.96 * np.sqrt(temp_var.mean(axis=1)) / np.sqrt(u * n_runs))
         ci_high.append(temp_mean.mean(axis=1) + 1.96 * np.sqrt(temp_var.mean(axis=1)) / np.sqrt(u * n_runs))
 
-    # print(ci_low[0].shape)
 
-    # means_over_times_df = pd.concat(means, axis=1)
-    # variances_over_times_df = pd.concat(variances, axis=1)
     ci_low_over_times_df = pd.concat(ci_low, axis=1)
     ci_high_over_times_df = pd.concat(ci_high, axis=1)
     out_means = pd.concat(out_means, axis=1)
 
-    # fig, ax = plt.subplots(len(df.columns), 1, figsize=(10, 30))
-    #plt.subplots_adjust(hspace=1.5)
 
 
 
@@ -1721,21 +1625,15 @@ def plotting_four_pumps_simulation_results():
         ax.tick_params(axis='both', which='major', labelsize=14)
         ax.tick_params(axis='both', which='minor', labelsize=12)
         ax.legend()
-        # fig.suptitle(f"{col.title()}, Gas Station with Four lines of fuel pumps \nover {n_sims-1} Simulation".title(), fontsize=20)
         fig.savefig(f"assignments/three/graphs/four_lines/four_pumps_simulation_results_{col}.png")
 
 
-    # set the title to the figure
-    # fig.suptitle(f"Results of Gas Station with Four lines of fuel pumps \nover {n_sims-1} Simulation".title(), fontsize=24, y = 0.92)
-
-    # fig.savefig("four_pumps_simulation_results.png")
-
-    # plt.show()
+    plt.show()
 
 
 if __name__ == "__main__":
-    # main()
-    # plotting_base_simulation_results()
+    main()
+    plotting_base_simulation_results()
     plotting_det_simulation_results()
-    # plotting_no_shop_simulation_results()
-    # plotting_four_pumps_simulation_results()
+    plotting_no_shop_simulation_results()
+    plotting_four_pumps_simulation_results()
