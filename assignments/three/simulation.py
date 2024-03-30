@@ -9,9 +9,13 @@ from datetime import datetime
 from tqdm import tqdm
 from pathlib import Path
 import os
+import warnings
+
+warnings.filterwarnings("ignore")
 
 # print(Path.cwd())
 os.chdir(Path.cwd().parent.parent)
+np.random.seed(420420)
 
 
 class Customer:
@@ -311,10 +315,10 @@ class Simulation:
                 customer_at_cashier = 0
 
             self.station_entry_queue.S += (len(self.station_entry_queue) + num_customers_at_fuel_pumps) * (
-                        self.current_time - self.old_time)
+                    self.current_time - self.old_time)
             self.shop_queue.S += len(self.shop_queue) * (self.current_time - self.old_time)
             self.payment_queue.S += (len(self.payment_queue) + customer_at_cashier) * (
-                        self.current_time - self.old_time)
+                    self.current_time - self.old_time)
 
             if event.type == Event.ARRIVAL:
                 self.number_of_customers_servered += 1
@@ -539,15 +543,15 @@ class Simulation:
                         self.station_entry_queue.leave_queue(self.station_entry_queue.customers_in_queue[0])
 
         results = {}
-        results["Waiting time Fuel station"] = np.mean(self.waiting_time_entrance_queue)
-        results["Queue length Fuel station"] = self.station_entry_queue.S / self.current_time
+        results["Waiting time\nFuel station (s)"] = np.mean(self.waiting_time_entrance_queue)
+        results["Queue length\nFuel station (Customers)"] = self.station_entry_queue.S / self.current_time
 
-        results["Queue length shop"] = self.shop_queue.S / self.current_time
+        results["Queue length\nshop (Customers)"] = self.shop_queue.S / self.current_time
 
-        results["Waiting time Payment queue"] = np.mean(self.waiting_time_payment_queue)
-        results["Queue length Payment queue"] = self.payment_queue.S / self.current_time
+        results["Waiting time\nPayment queue (s)"] = np.mean(self.waiting_time_payment_queue)
+        results["Queue length\nPayment queue (Customers)"] = self.payment_queue.S / self.current_time
 
-        results["Total time spent in the system"] = np.mean(self.total_time_spent_in_system)
+        results["Total time\nspent in the system (s)"] = np.mean(self.total_time_spent_in_system)
 
         results["Number of customers served"] = self.number_of_customers_servered
 
@@ -606,10 +610,10 @@ class Simulation:
                 customer_at_cashier = 0
 
             self.station_entry_queue.S += (len(self.station_entry_queue) + num_customers_at_fuel_pumps) * (
-                        self.current_time - self.old_time)
+                    self.current_time - self.old_time)
             self.shop_queue.S += len(self.shop_queue) * (self.current_time - self.old_time)
             self.payment_queue.S += (len(self.payment_queue) + customer_at_cashier) * (
-                        self.current_time - self.old_time)
+                    self.current_time - self.old_time)
 
             if event.type == Event.ARRIVAL:
                 current_customer.system_entry_time = self.current_time
@@ -816,15 +820,15 @@ class Simulation:
                         self.station_entry_queue.leave_queue(self.station_entry_queue.customers_in_queue[0])
 
         results = {}
-        results["Waiting time Fuel station"] = np.mean(self.waiting_time_entrance_queue)
-        results["Queue length Fuel station"] = self.station_entry_queue.S / self.current_time
+        results["Waiting time\nFuel station (s)"] = np.mean(self.waiting_time_entrance_queue)
+        results["Queue length\nFuel station (Customers)"] = self.station_entry_queue.S / self.current_time
 
-        results["Queue length shop"] = self.shop_queue.S / self.current_time
+        results["Queue length\nshop (Customers)"] = self.shop_queue.S / self.current_time
 
-        results["Waiting time Payment queue"] = np.mean(self.waiting_time_payment_queue)
-        results["Queue length Payment queue"] = self.payment_queue.S / self.current_time
+        results["Waiting time\nPayment queue (s)"] = np.mean(self.waiting_time_payment_queue)
+        results["Queue length\nPayment queue (Customers)"] = self.payment_queue.S / self.current_time
 
-        results["Total time spent in the system"] = np.mean(self.total_time_spent_in_system)
+        results["Total time\nspent in the system (s)"] = np.mean(self.total_time_spent_in_system)
 
         return results
 
@@ -868,7 +872,7 @@ class Simulation:
                     num_customers_at_fuel_pumps += 1
 
             self.station_entry_queue.S += (len(self.station_entry_queue) + num_customers_at_fuel_pumps) * (
-                        self.current_time - self.old_time)
+                    self.current_time - self.old_time)
 
             if event.type == Event.ARRIVAL:
                 self.number_of_customers_servered += 1
@@ -1036,10 +1040,10 @@ class Simulation:
                         self.station_entry_queue.leave_queue(self.station_entry_queue.customers_in_queue[0])
 
         results = {}
-        results["Waiting time Fuel station"] = np.mean(self.waiting_time_entrance_queue)
-        results["Queue length Fuel station"] = self.station_entry_queue.S / self.current_time
+        results["Waiting time\nFuel station (s)"] = np.mean(self.waiting_time_entrance_queue)
+        results["Queue length\nFuel station (Customers)"] = self.station_entry_queue.S / self.current_time
 
-        results["Total time spent in the system"] = np.mean(self.total_time_spent_in_system)
+        results["Total time\nspent in the system (s)"] = np.mean(self.total_time_spent_in_system)
         results["Number of customers served"] = self.number_of_customers_servered
 
         return results
@@ -1085,10 +1089,10 @@ class Simulation:
                 customer_at_cashier = 0
 
             self.station_entry_queue.S += (len(self.station_entry_queue) + num_customers_at_fuel_pumps) * (
-                        self.current_time - self.old_time)
+                    self.current_time - self.old_time)
             self.shop_queue.S += len(self.shop_queue) * (self.current_time - self.old_time)
             self.payment_queue.S += (len(self.payment_queue) + customer_at_cashier) * (
-                        self.current_time - self.old_time)
+                    self.current_time - self.old_time)
 
             if event.type == Event.ARRIVAL:
                 self.number_of_customers_servered += 1
@@ -1250,15 +1254,15 @@ class Simulation:
                         self.station_entry_queue.leave_queue(self.station_entry_queue.customers_in_queue[0])
 
         results = {}
-        results["Waiting time Fuel station"] = np.mean(self.waiting_time_entrance_queue)
-        results["Queue length Fuel station"] = self.station_entry_queue.S / self.current_time
+        results["Waiting time\nFuel station (s)"] = np.mean(self.waiting_time_entrance_queue)
+        results["Queue length\nFuel station (Customers)"] = self.station_entry_queue.S / self.current_time
 
-        results["Queue length shop"] = self.shop_queue.S / self.current_time
+        results["Queue length\nshop (Customers)"] = self.shop_queue.S / self.current_time
 
-        results["Waiting time Payment queue"] = np.mean(self.waiting_time_payment_queue)
-        results["Queue length Payment queue"] = self.payment_queue.S / self.current_time
+        results["Waiting time\nPayment queue (s)"] = np.mean(self.waiting_time_payment_queue)
+        results["Queue length\nPayment queue (Customers)"] = self.payment_queue.S / self.current_time
 
-        results["Total time spent in the system"] = np.mean(self.total_time_spent_in_system)
+        results["Total time\nspent in the system (s)"] = np.mean(self.total_time_spent_in_system)
         results["Number of customers served"] = self.number_of_customers_servered
 
         return results
@@ -1353,17 +1357,17 @@ def main():
         # if sim_name == 0:
         #     with open('results.txt', 'a') as f:
         #         f.write(f"\n-------------------Results for {sim_names[sim_name]}-------------------\n")
-        #         line = f"Waiting time Fuel station: {benchmark_sim_result["Waiting time Fuel station"]}\n"
+        #         line = f"Waiting time Fuel station: {benchmark_sim_result["Waiting time\nFuel station (s)"]}\n"
         #         f.write(line)
-        #         line = f"Queue length Fuel station: {benchmark_sim_result["Queue length Fuel station"]}\n"
+        #         line = f"Queue length Fuel station: {benchmark_sim_result["Queue length\nFuel station (Customers)"]}\n"
         #         f.write(line)
-        #         line = f"Queue length shop: {benchmark_sim_result["Queue length shop"]}\n"
+        #         line = f"Queue length shop: {benchmark_sim_result["Queue length\nshop (Customers)"]}\n"
         #         f.write(line)
-        #         line = f"Waiting time Payment queue: {benchmark_sim_result["Waiting time Payment queue"]}\n"
+        #         line = f"Waiting time Payment queue: {benchmark_sim_result["Waiting time\nPayment queue (s)"]}\n"
         #         f.write(line)
-        #         line = f"Queue length Payment queue: {benchmark_sim_result["Queue length Payment queue"]}\n"
+        #         line = f"Queue length Payment queue: {benchmark_sim_result["Queue length\nPayment queue (Customers)"]}\n"
         #         f.write(line)
-        #         line = f"Total time spent in the system: {benchmark_sim_result["Total time spent in the system"]}\n"
+        #         line = f"Total time spent in the system: {benchmark_sim_result["Total time\nspent in the system (s)"]}\n"
         #         f.write(line)
         #         line = f"Number of customers served: 420 \n"
         #         f.write(line)
@@ -1416,37 +1420,32 @@ def main():
     # print(tabulate(results3, headers='keys', tablefmt='pretty'))
 
 
-def plotting_simulation_results():
+def plotting_base_simulation_results():
     alphas = [3.740741878984356, 0.9896321424751765, 64.16085452170083, 1.044611732553164]
     betas = [0.014062799908188449, 0.014062799908188449, 1.426471221627218, 0.007307573018982521]
 
     # for poission distribution of service time payment
     mu = 45.6603325415677
 
-    n_runs = 100
-    n_sims = 5
+    n_runs = 1
+    n_sims = 1001
 
     # Perform n_run simulations
 
     sim = Simulation(alphas, betas, mu=mu)
-    sim_names = [
-        "Base simulation with empirical data (benchmark)",
-        "Base simulation fitted distributions",
-        "Simulation without the shop",
-        "Simulation with four lines of pumps"
-    ]
     # simulation_results = pd.DataFrame(
-    #     columns=["Waiting time Fuel station", "Queue length Fuel station", "Queue length shop", "Waiting time Payment queue", "Queue length Payment queue", "Total time spent in the system", "Number of customers served"]
+    #     columns=["Waiting time\nFuel station (s)", "Queue length\nFuel station (Customers)", "Queue length\nshop (Customers)", "Waiting time\nPayment queue (s)", "Queue length\nPayment queue (Customers)", "Total time\nspent in the system (s)", "Number of customers served"]
     # )
 
     means = []
     variances = []
     ci_low = []
     ci_high = []
+    out_means = []
 
+    simulation_results = []
 
-    for u in tqdm(range(1, n_sims)):
-        simulation_results = []
+    for u in tqdm(range(1, n_sims), desc="Simulation with base"):
 
         for i in range(n_runs):
             simulation_results.append(sim.base_simulation_fitted())
@@ -1459,56 +1458,269 @@ def plotting_simulation_results():
         means.append(df.mean(axis="index"))
         variances.append(df.var(axis="index"))
         # calculate the confidence interval
-        # temp_mean = pd.concat(means, axis=1)
-        # temp_var = pd.concat(variances, axis=1)
+        temp_mean = pd.concat(means, axis=1)
+        temp_var = pd.concat(variances, axis=1)
+        # print(temp_mean.mean(axis=1).shape)
+        out_means.append(temp_mean.mean(axis=1))
+        ci_low.append(temp_mean.mean(axis=1) - 1.96 * np.sqrt(temp_var.mean(axis=1)) / np.sqrt(u * n_runs))
+        ci_high.append(temp_mean.mean(axis=1) + 1.96 * np.sqrt(temp_var.mean(axis=1)) / np.sqrt(u * n_runs))
 
-        ci_low.append(means[-1] - 1.96 * np.sqrt(variances[-1]) / np.sqrt(n_runs))
-        ci_high.append(means[-1] + 1.96 * np.sqrt(variances[-1]) / np.sqrt(n_runs))
+    # print(ci_low[0].shape)
 
-
-    means_over_times_df = pd.concat(means, axis=1)
-    variances_over_times_df = pd.concat(variances, axis=1)
+    # means_over_times_df = pd.concat(means, axis=1)
+    # variances_over_times_df = pd.concat(variances, axis=1)
     ci_low_over_times_df = pd.concat(ci_low, axis=1)
     ci_high_over_times_df = pd.concat(ci_high, axis=1)
+    out_means = pd.concat(out_means, axis=1)
 
-    fig, ax = plt.subplots(len(df.columns), 1, figsize=(10, 24))
+    fig, ax = plt.subplots(len(df.columns), 1, figsize=(10, 30))
+    #plt.subplots_adjust(hspace=1.5)
+
+
+
 
     for i, col in enumerate(df.columns):
-        ax[i].plot(means_over_times_df.loc[col], label=f"Mean {col}", color='orange')
-        ax[i].fill_between(list(range(n_sims-1)), ci_low_over_times_df.loc[col], ci_high_over_times_df.loc[col], alpha=0.5, label=f"CI {col}")
-        ax[i].set_xlabel("Number of simulations")
-        ax[i].set_ylabel(f"{col}")
+        ax[i].plot(out_means.loc[col], label=f"Mean {col}", color='orange')
+        ax[i].fill_between(list(range(n_sims - 1)), ci_low_over_times_df.loc[col], ci_high_over_times_df.loc[col],
+                           alpha=0.5, label=f"CI {col}")
+        ax[i].set_xlabel("Number of simulations".title(), fontsize=16)
+        ax[i].set_ylabel(f"{col}", fontsize=16)
+        ax[i].tick_params(axis='both', which='major', labelsize=14)
+        ax[i].tick_params(axis='both', which='minor', labelsize=12)
         ax[i].legend()
 
-    #set the title to the figure
-    fig.suptitle("Results of Base Simulation over 100 simulations", fontsize=24)
+    # set the title to the figure
+    fig.suptitle(f"Results Base Simulation (with fitted distributions) \nover {n_sims-1} simulations".title(), fontsize=24, y = 0.92)
+    fig.savefig("base_simulation_results.png")
+    plt.show()
+
+
+def plotting_det_simulation_results():
+    alphas = [3.740741878984356, 0.9896321424751765, 64.16085452170083, 1.044611732553164]
+    betas = [0.014062799908188449, 0.014062799908188449, 1.426471221627218, 0.007307573018982521]
+
+    # for poission distribution of service time payment
+    mu = 45.6603325415677
+
+    n_runs = 1
+    n_sims = 1001
+
+    # Perform n_run simulations
+
+    sim = Simulation(alphas, betas, mu=mu)
+    # simulation_results = pd.DataFrame(
+    #     columns=["Waiting time\nFuel station (s)", "Queue length\nFuel station (Customers)", "Queue length\nshop (Customers)", "Waiting time\nPayment queue (s)", "Queue length\nPayment queue (Customers)", "Total time\nspent in the system (s)", "Number of customers served"]
+    # )
+
+    means = []
+    variances = []
+    ci_low = []
+    ci_high = []
+    out_means = []
+
+    simulation_results = []
+
+    for u in tqdm(range(1, n_sims), desc="Simulation with empirical data"):
+
+        for i in range(n_runs):
+            simulation_results.append(sim.base_simulation_impirical_data())
+            sim.setup_simulation()
+
+        dfs = [pd.DataFrame(res, index=[0]) for res in simulation_results]
+
+        df = pd.concat(dfs, axis=0)
+
+        means.append(df.mean(axis="index"))
+        variances.append(df.var(axis="index"))
+        # calculate the confidence interval
+        temp_mean = pd.concat(means, axis=1)
+        temp_var = pd.concat(variances, axis=1)
+        # print(temp_mean.mean(axis=1).shape)
+        out_means.append(temp_mean.mean(axis=1))
+        ci_low.append(temp_mean.mean(axis=1) - 1.96 * np.sqrt(temp_var.mean(axis=1)) / np.sqrt(u * n_runs))
+        ci_high.append(temp_mean.mean(axis=1) + 1.96 * np.sqrt(temp_var.mean(axis=1)) / np.sqrt(u * n_runs))
+
+    # print(ci_low[0].shape)
+
+    # means_over_times_df = pd.concat(means, axis=1)
+    # variances_over_times_df = pd.concat(variances, axis=1)
+    ci_low_over_times_df = pd.concat(ci_low, axis=1)
+    ci_high_over_times_df = pd.concat(ci_high, axis=1)
+    out_means = pd.concat(out_means, axis=1)
+
+    fig, ax = plt.subplots(len(df.columns), 1, figsize=(10, 30))
+    #plt.subplots_adjust(hspace=1.5)
+
+
+
+
+    for i, col in enumerate(df.columns):
+        ax[i].plot(out_means.loc[col], label=f"Mean {col}", color='orange')
+        ax[i].fill_between(list(range(n_sims - 1)), ci_low_over_times_df.loc[col], ci_high_over_times_df.loc[col],
+                           alpha=0.5, label=f"CI {col}")
+        ax[i].set_xlabel("Number of simulations".title(), fontsize=16)
+        ax[i].set_ylabel(f"{col}", fontsize=16)
+        ax[i].tick_params(axis='both', which='major', labelsize=14)
+        ax[i].tick_params(axis='both', which='minor', labelsize=12)
+        ax[i].legend()
+
+    # set the title to the figure
+    fig.suptitle(f"Results Base Simulation (with Empirical Data) \nover {n_sims-1} simulations".title(), fontsize=24, y = 0.92)
+    fig.savefig("det_simulation_results.png")
+    plt.show()
+
+def plotting_no_shop_simulation_results():
+    alphas = [3.740741878984356, 0.9896321424751765, 64.16085452170083, 1.044611732553164]
+    betas = [0.014062799908188449, 0.014062799908188449, 1.426471221627218, 0.007307573018982521]
+
+    # for poission distribution of service time payment
+    mu = 45.6603325415677
+
+    n_runs = 1
+    n_sims = 1001
+
+    # Perform n_run simulations
+
+    sim = Simulation(alphas, betas, mu=mu)
+    # simulation_results = pd.DataFrame(
+    #     columns=["Waiting time\nFuel station (s)", "Queue length\nFuel station (Customers)", "Queue length\nshop (Customers)", "Waiting time\nPayment queue (s)", "Queue length\nPayment queue (Customers)", "Total time\nspent in the system (s)", "Number of customers served"]
+    # )
+
+    means = []
+    variances = []
+    ci_low = []
+    ci_high = []
+    out_means = []
+
+    simulation_results = []
+
+    for u in tqdm(range(1, n_sims), desc="Simulation with no shop"):
+
+        for i in range(n_runs):
+            simulation_results.append(sim.simulation_no_shop())
+            sim.setup_simulation()
+
+        dfs = [pd.DataFrame(res, index=[0]) for res in simulation_results]
+
+        df = pd.concat(dfs, axis=0)
+
+        means.append(df.mean(axis="index"))
+        variances.append(df.var(axis="index"))
+        # calculate the confidence interval
+        temp_mean = pd.concat(means, axis=1)
+        temp_var = pd.concat(variances, axis=1)
+        # print(temp_mean.mean(axis=1).shape)
+        out_means.append(temp_mean.mean(axis=1))
+        ci_low.append(temp_mean.mean(axis=1) - 1.96 * np.sqrt(temp_var.mean(axis=1)) / np.sqrt(u * n_runs))
+        ci_high.append(temp_mean.mean(axis=1) + 1.96 * np.sqrt(temp_var.mean(axis=1)) / np.sqrt(u * n_runs))
+
+    # print(ci_low[0].shape)
+
+    # means_over_times_df = pd.concat(means, axis=1)
+    # variances_over_times_df = pd.concat(variances, axis=1)
+    ci_low_over_times_df = pd.concat(ci_low, axis=1)
+    ci_high_over_times_df = pd.concat(ci_high, axis=1)
+    out_means = pd.concat(out_means, axis=1)
+
+    fig, ax = plt.subplots(len(df.columns), 1, figsize=(10, 30))
+    #plt.subplots_adjust(hspace=1.5)
+
+
+
+
+    for i, col in enumerate(df.columns):
+        ax[i].plot(out_means.loc[col], label=f"Mean {col}", color='orange')
+        ax[i].fill_between(list(range(n_sims - 1)), ci_low_over_times_df.loc[col], ci_high_over_times_df.loc[col],
+                           alpha=0.5, label=f"CI {col}")
+        ax[i].set_xlabel("Number of simulations".title(), fontsize=16)
+        ax[i].set_ylabel(f"{col}", fontsize=16)
+        ax[i].tick_params(axis='both', which='major', labelsize=14)
+        ax[i].tick_params(axis='both', which='minor', labelsize=12)
+        ax[i].legend()
+
+    # set the title to the figure
+    fig.suptitle(f"Results of Gas Station With No Shop \nover {n_sims-1} simulations".title(), fontsize=24, y = 0.92)
+    fig.savefig("no_shop_simulation_results.png")
+    plt.show()
+
+
+def plotting_four_pumps_simulation_results():
+    alphas = [3.740741878984356, 0.9896321424751765, 64.16085452170083, 1.044611732553164]
+    betas = [0.014062799908188449, 0.014062799908188449, 1.426471221627218, 0.007307573018982521]
+
+    # for poission distribution of service time payment
+    mu = 45.6603325415677
+
+    n_runs = 1
+    n_sims = 1001
+
+    # Perform n_run simulations
+
+    sim = Simulation(alphas, betas, mu=mu)
+    # simulation_results = pd.DataFrame(
+    #     columns=["Waiting time\nFuel station (s)", "Queue length\nFuel station (Customers)", "Queue length\nshop (Customers)", "Waiting time\nPayment queue (s)", "Queue length\nPayment queue (Customers)", "Total time\nspent in the system (s)", "Number of customers served"]
+    # )
+
+    means = []
+    variances = []
+    ci_low = []
+    ci_high = []
+    out_means = []
+
+    simulation_results = []
+
+    for u in tqdm(range(1, n_sims), desc="Simulation with four lines of pumps"):
+
+        for i in range(n_runs):
+            simulation_results.append(sim.simulation_four_lines_of_pumps())
+            sim.setup_simulation()
+
+        dfs = [pd.DataFrame(res, index=[0]) for res in simulation_results]
+
+        df = pd.concat(dfs, axis=0)
+
+        means.append(df.mean(axis="index"))
+        variances.append(df.var(axis="index"))
+        # calculate the confidence interval
+        temp_mean = pd.concat(means, axis=1)
+        temp_var = pd.concat(variances, axis=1)
+        out_means.append(temp_mean.mean(axis=1))
+        ci_low.append(temp_mean.mean(axis=1) - 1.96 * np.sqrt(temp_var.mean(axis=1)) / np.sqrt(u * n_runs))
+        ci_high.append(temp_mean.mean(axis=1) + 1.96 * np.sqrt(temp_var.mean(axis=1)) / np.sqrt(u * n_runs))
+
+    # print(ci_low[0].shape)
+
+    # means_over_times_df = pd.concat(means, axis=1)
+    # variances_over_times_df = pd.concat(variances, axis=1)
+    ci_low_over_times_df = pd.concat(ci_low, axis=1)
+    ci_high_over_times_df = pd.concat(ci_high, axis=1)
+    out_means = pd.concat(out_means, axis=1)
+
+    fig, ax = plt.subplots(len(df.columns), 1, figsize=(10, 30))
+    #plt.subplots_adjust(hspace=1.5)
+
+
+
+    for i, col in enumerate(df.columns):
+        ax[i].plot(out_means.loc[col], label=f"Mean {col}", color='orange')
+        ax[i].fill_between(list(range(n_sims - 1)), ci_low_over_times_df.loc[col], ci_high_over_times_df.loc[col],
+                           alpha=0.5, label=f"CI {col}")
+        ax[i].set_xlabel("Number of simulations".title(), fontsize=16)
+        ax[i].set_ylabel(f"{col}", fontsize=16)
+        ax[i].tick_params(axis='both', which='major', labelsize=14)
+        ax[i].tick_params(axis='both', which='minor', labelsize=12)
+        ax[i].legend()
+
+    # set the title to the figure
+    fig.suptitle(f"Results of Gas Station with Four lines of fuel pumps \nover {n_sims-1} Simulation".title(), fontsize=24, y = 0.92)
+    fig.savefig("four_pumps_simulation_results.png")
 
     plt.show()
 
 
-    # print(means_over_times_df.index)
-
-
-    # fig, ax = plt.subplots(len(df.columns), 1, figsize=(10, 40))
-    #
-    #
-    # for i, col in enumerate(df.columns):
-    #     ax[i].hist(df[col], density=True)
-    #
-    #     ax[i].set_xlabel(col)
-    #     ax[i].set_ylabel("Density")
-    #     ax[i].set_title(f"Distribution of {col}")
-
-
-        # ci = confidence_interval(df[col])
-        # ax[i].axvline(ci[0], color='orange', linestyle='dashed', linewidth=2)
-        # ax[i].axvline(ci[1], color='orange', linestyle='dashed', linewidth=2)
-        # ax[i].legend([f"Confidence interval for {col}"])
-        # ax[i].set_title(col)
-    #
-    # plt.show()
-
-
 if __name__ == "__main__":
     # main()
-    plotting_simulation_results()
+    plotting_base_simulation_results()
+    plotting_det_simulation_results()
+    plotting_no_shop_simulation_results()
+    plotting_four_pumps_simulation_results()
