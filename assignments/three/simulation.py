@@ -26,6 +26,25 @@ class Customer:
     def __init__(self, cust_id, arrival_time=0, fuel_time=0, shop_time=0, payment_time=0,
                  parking_preference=NO_PREFERENCE,
                  shop_yes_no=False):
+        """
+        Initialize a Customer instance.
+
+        Parameters:
+        cust_id (int): The unique identifier for the customer.
+        arrival_time (int, optional): The time the customer arrives. Defaults to 0.
+        fuel_time (int, optional): The time the customer spends at the fuel pump. Defaults to 0.
+        shop_time (int, optional): The time the customer spends in the shop. Defaults to 0.
+        payment_time (int, optional): The time the customer spends at the payment queue. Defaults to 0.
+        parking_preference (int, optional): The parking preference of the customer. Defaults to NO_PREFERENCE.
+        shop_yes_no (bool, optional): Whether the customer wants to shop or not. Defaults to False.
+
+        Attributes:
+        system_entry_time (int): The time the customer entered the system. Initialized to 0.
+        payment_queue_time (int): The entry time to the payment queue. Initialized to 0.
+        entrance_queue_time (int): The entry time to the entrance queue. Initialized to 0.
+        fuel_pump (None): The fuel pump the customer is assigned to. Initialized to None.
+        """
+
         self.system_entry_time = 0  # time the customer entered the system
 
         self.cust_id = cust_id  # customer id
@@ -43,23 +62,70 @@ class Customer:
 
 
 class FES:
+    """
+    A class used to represent a Future Event Scheduler (FES).
 
+    Attributes
+    ----------
+    events : list
+        a list of events to be scheduled
+
+    Methods
+    -------
+    add(event)
+        Adds an event to the events list in a heap queue format.
+    next()
+        Removes and returns the smallest event from the events list.
+    isEmpty()
+        Checks if the events list is empty.
+    __repr__()
+        Returns a string representation of the sorted events list.
+    """
     def __init__(self):
+        """
+        Constructs the FES class with an empty events list.
+        """
         self.events = []
 
     def add(self, event):
+        """
+        Adds an event to the events list in a heap queue format.
+
+        Parameters:
+        event : object
+            The event to be added to the events list.
+        """
         heapq.heappush(self.events, event)
 
     def next(self):
+        """
+        Removes and returns the smallest event from the events list.
+
+        Returns:
+        object
+            The smallest event from the events list.
+        """
         return heapq.heappop(self.events)
 
     def isEmpty(self):
+        """
+        Checks if the events list is empty.
+
+        Returns:
+        bool
+            True if the events list is empty, False otherwise.
+        """
+
         return len(self.events) == 0
 
     def __repr__(self):
-        # Note that if you print self.events, it would not appear to be sorted
-        # (although they are sorted internally).
-        # For this reason we use the function 'sorted'
+        """
+        Returns a string representation of the sorted events list.
+
+        Returns:
+        str
+            A string representation of the sorted events list.
+        """
         s = ''
         sortedEvents = sorted(self.events)
         for e in sortedEvents:
@@ -1360,6 +1426,9 @@ def plotting_base_simulation_results(n_runs =1, n_sims = 1000):
     """
     This function plots the evolution of the mean and confidence interval of the base simulation results over time
     it stores the plots in the graphs/base_fitted folder
+    args:
+    n_runs: int, the number of runs per simulation
+    n_sims: int, the number of simulations to perform
     """
     alphas = [3.740741878984356, 0.9896321424751765, 64.16085452170083, 1.044611732553164]
     betas = [0.014062799908188449, 0.014062799908188449, 1.426471221627218, 0.007307573018982521]
@@ -1428,6 +1497,10 @@ def plotting_det_simulation_results(n_runs =1, n_sims = 1000):
     """
     This function plots the evolution of the mean and confidence interval of the base simulation results over time
     it stores the plots in the graphs/base_empirical folder
+
+    args:
+    n_runs: int, the number of runs per simulation
+    n_sims: int, the number of simulations to perform
     """
     alphas = [3.740741878984356, 0.9896321424751765, 64.16085452170083, 1.044611732553164]
     betas = [0.014062799908188449, 0.014062799908188449, 1.426471221627218, 0.007307573018982521]
@@ -1498,6 +1571,10 @@ def plotting_no_shop_simulation_results(n_runs =1, n_sims = 1000):
     """
     This function plots the evolution of the mean and confidence interval of the base simulation results over time
     it stores the plots in the graphs/no_shop folder
+
+    args:
+    n_runs: int, the number of runs per simulation
+    n_sims: int, the number of simulations to perform
     """
     alphas = [3.740741878984356, 0.9896321424751765, 64.16085452170083, 1.044611732553164]
     betas = [0.014062799908188449, 0.014062799908188449, 1.426471221627218, 0.007307573018982521]
@@ -1567,6 +1644,9 @@ def plotting_four_pumps_simulation_results(n_runs =1, n_sims = 1000):
     """
     This function plots the evolution of the mean and confidence interval of the base simulation results over time
     it saves the plots in the graphs/four_lines folder
+    args:
+    n_runs: int, the number of runs per simulation
+    n_sims: int, the number of simulations to perform
     """
     alphas = [3.740741878984356, 0.9896321424751765, 64.16085452170083, 1.044611732553164]
     betas = [0.014062799908188449, 0.014062799908188449, 1.426471221627218, 0.007307573018982521]
