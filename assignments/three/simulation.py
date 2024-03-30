@@ -1558,7 +1558,7 @@ def plotting_det_simulation_results():
 
 
     for i, col in enumerate(df.columns):
-        fig, ax = plt.subplots(1, 1, figsize=(10, 6))
+        fig, ax = plt.subplots(1, 1, figsize=(10.2, 6))
         ax.plot(out_means.loc[col], label=f"Mean {col}", color='orange')
         ax.fill_between(list(range(n_sims - 1)), ci_low_over_times_df.loc[col], ci_high_over_times_df.loc[col],
                            alpha=0.5, label=f"CI {col}")
@@ -1735,7 +1735,7 @@ def plotting_four_pumps_simulation_results():
 
 if __name__ == "__main__":
     # main()
-    plotting_base_simulation_results()
+    # plotting_base_simulation_results()
     plotting_det_simulation_results()
-    plotting_no_shop_simulation_results()
-    plotting_four_pumps_simulation_results()
+    # plotting_no_shop_simulation_results()
+    # plotting_four_pumps_simulation_results()
