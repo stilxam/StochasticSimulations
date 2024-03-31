@@ -409,7 +409,7 @@ class Simulation:
         self.customer_id = 0
         self.old_time = 0
         self.current_time = 0
-        self.number_of_customers_servered = 0
+        self.number_of_customers_served = 0
 
         # Initialize servers
         self.cashier = Server("C1")
@@ -626,7 +626,7 @@ class Simulation:
                     self.current_time - self.old_time)
 
             if event.type == Event.ARRIVAL:
-                self.number_of_customers_servered += 1
+                self.number_of_customers_served += 1
                 current_customer.system_entry_time = self.current_time
                 self.station_entry_queue.join_queue(current_customer)
 
@@ -858,12 +858,12 @@ class Simulation:
 
         results["Total time\nspent in the system (s)"] = np.mean(self.total_time_spent_in_system)
 
-        results["Number of customers served"] = self.number_of_customers_servered
+        results["Number of customers served"] = self.number_of_customers_served
 
         return results
 
     # -----------------------------------------Base simulation (with actual dataset)------------------------------------------#
-    def base_simulation_impirical_data(self):
+    def base_simulation_empirical_data(self):
         """
         Runs the base simulation of the gas station using empirical data for the interarrival times,
         fueling times, shopping times, and payment times.
@@ -893,7 +893,7 @@ class Simulation:
         for index, row in data.iterrows():
             opening_time = pd.to_datetime('2024-02-01 06:00:00')
             arrival_time = (row["Arrival Time"] - opening_time).total_seconds()
-            self.customer_id + - 1
+            self.customer_id += 1
             customer = Customer(self.customer_id, arrival_time=arrival_time,
                                 fuel_time=row["Service time Fuel"],
                                 shop_time=row["Shop time"],
@@ -941,7 +941,7 @@ class Simulation:
                     self.current_time - self.old_time)
 
             if event.type == Event.ARRIVAL:
-                self.number_of_customers_servered += 1
+                self.number_of_customers_served += 1
                 current_customer.system_entry_time = self.current_time
                 self.station_entry_queue.join_queue(current_customer)
 
@@ -1156,7 +1156,7 @@ class Simulation:
 
         results["Total time\nspent in the system (s)"] = np.mean(self.total_time_spent_in_system)
 
-        results["Number of customers served"] = self.number_of_customers_servered
+        results["Number of customers served"] = self.number_of_customers_served
 
         return results
 
@@ -1223,7 +1223,7 @@ class Simulation:
                     self.current_time - self.old_time)
 
             if event.type == Event.ARRIVAL:
-                self.number_of_customers_servered += 1
+                self.number_of_customers_served += 1
                 current_customer.system_entry_time = self.current_time
                 self.station_entry_queue.join_queue(current_customer)
 
@@ -1392,7 +1392,7 @@ class Simulation:
         results["Queue length\nFuel station (Customers)"] = self.station_entry_queue.S / self.current_time
 
         results["Total time\nspent in the system (s)"] = np.mean(self.total_time_spent_in_system)
-        results["Number of customers served"] = self.number_of_customers_servered
+        results["Number of customers served"] = self.number_of_customers_served
 
         return results
 
@@ -1464,7 +1464,7 @@ class Simulation:
                     self.current_time - self.old_time)
 
             if event.type == Event.ARRIVAL:
-                self.number_of_customers_servered += 1
+                self.number_of_customers_served += 1
                 current_customer.system_entry_time = self.current_time
                 self.station_entry_queue.join_queue(current_customer)
 
@@ -1632,7 +1632,7 @@ class Simulation:
         results["Queue length\nPayment queue (Customers)"] = self.payment_queue.S / self.current_time
 
         results["Total time\nspent in the system (s)"] = np.mean(self.total_time_spent_in_system)
-        results["Number of customers served"] = self.number_of_customers_servered
+        results["Number of customers served"] = self.number_of_customers_served
 
         return results
 
@@ -1703,7 +1703,7 @@ def main():
         if sim_name == 0:
             print("Base simulation with empirical data (benchmark)")
             for i in range(n_runs):
-                simulation_results[i] = sim.base_simulation_impirical_data()
+                simulation_results[i] = sim.base_simulation_empirical_data()
                 sim.setup_simulation()
                 print(f"Base Impirical Simulation {i} done")
 
@@ -1855,7 +1855,7 @@ def plotting_det_simulation_results(n_runs =1, n_sims = 1000):
     for u in tqdm(range(1, n_sims), desc="Simulation with empirical data"):
 
         for i in range(n_runs):
-            simulation_results.append(sim.base_simulation_impirical_data())
+            simulation_results.append(sim.base_simulation_empirical_data())
             sim.setup_simulation()
 
         dfs = [pd.DataFrame(res, index=[0]) for res in simulation_results]
