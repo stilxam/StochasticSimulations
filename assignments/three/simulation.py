@@ -14,8 +14,8 @@ import warnings
 warnings.filterwarnings("ignore")
 
 # print(Path.cwd())
-os.chdir(Path.cwd().parent.parent)
-np.random.seed(420420)
+# os.chdir(Path.cwd().parent.parent)
+# np.random.seed(420420)
 
 
 class Customer:
@@ -384,7 +384,9 @@ class Simulation:
 
     def setup_simulation(self):
         """
-        Sets up the simulation by initializing distributions, resetting simulation time and queues, resetting counters and measurements, initializing servers, and resetting statistics.
+        Sets up the simulation by initializing distributions, resetting simulation time and queues, 
+        resetting counters and measurements, initializing servers, and resetting statistics.
+
         """
 
         # Initialize distributions
@@ -939,6 +941,7 @@ class Simulation:
                     self.current_time - self.old_time)
 
             if event.type == Event.ARRIVAL:
+                self.number_of_customers_servered += 1
                 current_customer.system_entry_time = self.current_time
                 self.station_entry_queue.join_queue(current_customer)
 
@@ -1153,23 +1156,31 @@ class Simulation:
 
         results["Total time\nspent in the system (s)"] = np.mean(self.total_time_spent_in_system)
 
+        results["Number of customers served"] = self.number_of_customers_servered
+
         return results
 
     # -----------------------------------------Simulation without the shop------------------------------------------------------#
     def simulation_no_shop(self):
         """
-        Runs the simulation of the gas station without a shop. In this scenario, each fuel pump has its own payment terminal.
+        Runs the simulation of the gas station without a shop. In this scenario, 
+        each fuel pump has its own payment terminal.
 
-        The simulation follows the process of a customer arriving at the gas station, choosing a fuel pump, and then paying at the pump's terminal. The simulation takes into account the customer's preferences for fuel pumps.
+        The simulation follows the process of a customer arriving at the gas station, choosing a fuel pump, 
+        and then paying at the pump's terminal. The simulation takes into account the customer's preferences 
+        for fuel pumps.
 
-        The simulation also handles different events such as the arrival of a customer, the departure of a customer from the fuel pump, and the departure of a customer from the payment terminal.
+        The simulation also handles different events such as the arrival of a customer, 
+        the departure of a customer from the fuel pump, and the departure of a customer from the payment terminal.
 
         The simulation continues until there are no more events in the future event scheduler (FES).
 
-        The results of the simulation are returned as a dictionary containing the average waiting times, queue lengths, total time spent in the system, and the number of customers served.
+        The results of the simulation are returned as a dictionary containing the average waiting times, 
+        queue lengths, total time spent in the system, and the number of customers served.
 
         Returns:
-        dict: A dictionary containing the results of the simulation. The keys of the dictionary are the names of the metrics and the values are the calculated values for these metrics.
+        dict: A dictionary containing the results of the simulation.The keys of the dictionary are the 
+        names of the metrics and the values are the calculated values for these metrics.
         """
 
         # each fuel pump has its own payment terminal.
@@ -1644,13 +1655,15 @@ def main():
     """
     The main function to run the gas station simulation.
 
-    This function sets up the parameters for the simulation, including the alpha and beta values for the gamma distributions,
-    the mean for the Poisson distribution, and the number of simulation runs. It then creates an instance of the Simulation class
-    and runs four different types of simulations: a base simulation with empirical data, a base simulation with fitted distributions,
+    This function sets up the parameters for the simulation, including the alpha and beta values 
+    for the gamma distributions, the mean for the Poisson distribution, and the number of simulation runs. 
+    It then creates an instance of the Simulation class and runs four different types of simulations: 
+    a base simulation with empirical data, a base simulation with fitted distributions,
     a simulation without a shop, and a simulation with four lines of fuel pumps.
 
-    The results of each simulation run are stored in a list and written to a text file named 'results.txt'. The mean, standard deviation,
-    and confidence interval of the results are also calculated and written to the file.
+    The results of each simulation run are stored in a list and written to a text file named 'results.txt'. 
+    The mean, standard deviation, and confidence interval of the results are also calculated and written 
+    to the file.
 
     Note: This function uses a random seed for reproducibility.
     """
@@ -1825,7 +1838,10 @@ def plotting_det_simulation_results(n_runs =1, n_sims = 1000):
 
     sim = Simulation(alphas, betas, mu=mu)
     # simulation_results = pd.DataFrame(
-    #     columns=["Waiting time\nFuel station (s)", "Queue length\nFuel station (Customers)", "Queue length\nshop (Customers)", "Waiting time\nPayment queue (s)", "Queue length\nPayment queue (Customers)", "Total time\nspent in the system (s)", "Number of customers served"]
+    #     columns=["Waiting time\nFuel station (s)", 
+                    #"Queue length\nFuel station (Customers)", "Queue length\nshop (Customers)", 
+                    #"Waiting time\nPayment queue (s)", "Queue length\nPayment queue (Customers)", 
+                    #"Total time\nspent in the system (s)", "Number of customers served"]
     # )
 
     means = []
@@ -1859,10 +1875,6 @@ def plotting_det_simulation_results(n_runs =1, n_sims = 1000):
     ci_low_over_times_df = pd.concat(ci_low, axis=1)
     ci_high_over_times_df = pd.concat(ci_high, axis=1)
     out_means = pd.concat(out_means, axis=1)
-
-
-
-
 
     for i, col in enumerate(df.columns):
         fig, ax = plt.subplots(1, 1, figsize=(10.2, 6))
@@ -1950,7 +1962,6 @@ def plotting_no_shop_simulation_results(n_runs =1, n_sims = 1000):
 
     plt.show()
 
-
 def plotting_four_pumps_simulation_results(n_runs =1, n_sims = 1000):
     """
     This function plots the evolution of the mean and confidence interval of the base simulation results over time
@@ -2024,7 +2035,7 @@ def plotting_four_pumps_simulation_results(n_runs =1, n_sims = 1000):
 
 if __name__ == "__main__":
     main()
-    plotting_base_simulation_results()
-    plotting_det_simulation_results()
-    plotting_no_shop_simulation_results()
-    plotting_four_pumps_simulation_results()
+    # plotting_base_simulation_results()
+    # plotting_det_simulation_results()
+    # plotting_no_shop_simulation_results()
+    # plotting_four_pumps_simulation_results()
